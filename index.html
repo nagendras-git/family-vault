@@ -144,6 +144,9 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 .settings-row:last-child{border-bottom:none}
 .settings-lbl{font-size:.84rem;font-weight:600;color:var(--text1)}
 .settings-sub{font-size:.72rem;color:var(--text3);margin-top:2px}
+.size-btns{display:flex;gap:.35rem}
+.sz-btn{min-width:2rem;height:2rem;padding:0 .4rem;border:1px solid var(--border);border-radius:.45rem;background:var(--surface2);color:var(--text3);font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;font-family:'Inter',sans-serif;transition:all .12s}
+.sz-btn.on{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:var(--blue)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:14px 16px;margin-bottom:10px}
 .card-title{font-size:.86rem;font-weight:700;color:var(--text1);margin-bottom:2px}
 .card-sub{font-size:.72rem;color:var(--text3);margin-bottom:10px}
@@ -222,6 +225,22 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
       <div class="form-row2">
         <div class="fg"><label class="fl">Person 1</label><input class="fi" id="set-p1" placeholder="e.g. Nagendra" oninput="saveProfile()"></div>
         <div class="fg" style="margin-bottom:0"><label class="fl">Person 2</label><input class="fi" id="set-p2" placeholder="e.g. Renuka" oninput="saveProfile()"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Appearance</div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-lbl">Text size</div>
+          <div class="settings-sub">Adjust to your comfort level</div>
+        </div>
+        <div class="size-btns">
+          <button class="sz-btn" id="sz14" onclick="setSize(14)">S</button>
+          <button class="sz-btn on" id="sz16" onclick="setSize(16)">M</button>
+          <button class="sz-btn" id="sz18" onclick="setSize(18)">L</button>
+          <button class="sz-btn" id="sz20" onclick="setSize(20)">XL</button>
+        </div>
       </div>
     </div>
 
@@ -571,6 +590,18 @@ function saveProfile(){
   document.getElementById('hdr-people').textContent=S.profile.p1+' & '+S.profile.p2;
 }
 
+function setSize(px){
+  document.documentElement.style.setProperty('--base',px+'px');
+  [14,16,18,20].forEach(s=>{
+    const el=document.getElementById('sz'+s);if(!el)return;
+    const on=s===px;
+    el.style.background=on?'rgba(59,130,246,.15)':'var(--surface2)';
+    el.style.border=on?'1px solid rgba(59,130,246,.4)':'1px solid var(--border)';
+    el.style.color=on?'var(--blue)':'var(--text3)';
+  });
+  try{localStorage.setItem('familyvault-sz',px)}catch(e){}
+}
+
 function exportData(){
   const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
@@ -750,6 +781,7 @@ function switchPage(name){
 /* ===================== INIT ===================== */
 load();
 renderAll();
+(function(){try{const s=parseInt(localStorage.getItem('familyvault-sz'));if(s>=14&&s<=20)setSize(s);else setSize(16);}catch(e){setSize(16);}})();
 </script>
 </body>
 </html>
