@@ -180,8 +180,12 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
       </div>
       <div class="summary-grid">
         <div class="summary-cell">
-          <div class="summary-cell-lbl">Insurance Cover</div>
-          <div class="summary-cell-val" style="color:var(--green)" id="sum-insure">₹0</div>
+          <div class="summary-cell-lbl">Life Cover (Term)</div>
+          <div class="summary-cell-val" style="color:var(--green)" id="sum-life">₹0</div>
+        </div>
+        <div class="summary-cell">
+          <div class="summary-cell-lbl">Health Cover</div>
+          <div class="summary-cell-val" style="color:var(--green)" id="sum-health">₹0</div>
         </div>
         <div class="summary-cell">
           <div class="summary-cell-lbl">Active Goals</div>
@@ -194,6 +198,10 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
         <div class="summary-cell">
           <div class="summary-cell-lbl">Nominees on File</div>
           <div class="summary-cell-val" id="sum-nominees">0</div>
+        </div>
+        <div class="summary-cell">
+          <div class="summary-cell-lbl">Documents Indexed</div>
+          <div class="summary-cell-val" id="sum-docs">0</div>
         </div>
       </div>
     </div>
@@ -208,11 +216,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
   <div class="container">
 
     <div class="card">
-      <div class="card-title">Household Names</div>
+      <div class="card-title">Family Names</div>
       <div class="card-sub">Used to label who each entry belongs to</div>
       <div class="form-row2">
         <div class="fg"><label class="fl">Person 1</label><input class="fi" id="set-p1" placeholder="e.g. Nagendra" oninput="saveProfile()"></div>
-        <div class="fg" style="margin-bottom:0"><label class="fl">Person 2</label><input class="fi" id="set-p2" placeholder="e.g. Spouse" oninput="saveProfile()"></div>
+        <div class="fg" style="margin-bottom:0"><label class="fl">Person 2</label><input class="fi" id="set-p2" placeholder="e.g. Renuka" oninput="saveProfile()"></div>
       </div>
     </div>
 
@@ -230,6 +238,12 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
         <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('import-file').click()">Import Backup</button>
       </div>
       <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(this)">
+    </div>
+
+    <div class="card">
+      <div class="card-title">Demo Data</div>
+      <div class="card-sub">Load realistic sample entries to explore the app. You can clear everything below once you're ready to enter your own details.</div>
+      <button class="btn btn-ghost btn-full" onclick="loadSampleData()">Load Sample Data</button>
     </div>
 
     <div class="card">
@@ -410,12 +424,15 @@ function renderAll(){
   document.getElementById('set-p2').value=S.profile.p2==='Person 2'?'':(S.profile.p2||'');
 
   const totalInvest=S.investments.reduce((a,i)=>a+Number(i.value||0),0);
-  const totalInsure=S.insurance.reduce((a,i)=>a+Number(i.sumAssured||0),0);
+  const lifeCover=S.insurance.filter(i=>i.itype==='Term Life').reduce((a,i)=>a+Number(i.sumAssured||0),0);
+  const healthCover=S.insurance.filter(i=>i.itype==='Health').reduce((a,i)=>a+Number(i.sumAssured||0),0);
   document.getElementById('sum-invest').textContent=L(totalInvest);
-  document.getElementById('sum-insure').textContent=L(totalInsure);
+  document.getElementById('sum-life').textContent=L(lifeCover);
+  document.getElementById('sum-health').textContent=L(healthCover);
   document.getElementById('sum-goals').textContent=S.goals.length;
   document.getElementById('sum-accounts').textContent=S.accounts.length;
   document.getElementById('sum-nominees').textContent=S.nominees.length;
+  document.getElementById('sum-docs').textContent=S.documents.length;
 
   const root=document.getElementById('sections-root');
   root.innerHTML=SECTIONS.map(sec=>renderSectionHTML(sec)).join('');
@@ -423,7 +440,7 @@ function renderAll(){
 
 function renderSectionHTML(sec){
   const items=S[sec.key]||[];
-  const isOpen=secOpenState[sec.key]!==false; // default open
+  const isOpen=secOpenState[sec.key]===true; // default closed
   const rows=items.length?items.map(i=>{
     const val=sec.rowValue(i);
     return `<div class="row-item tap" onclick="openItemSheet('${sec.key}','${i.id}')">
@@ -461,7 +478,7 @@ function renderSectionHTML(sec){
 }
 
 function toggleSection(key){
-  secOpenState[key]=!(secOpenState[key]!==false);
+  secOpenState[key]=!(secOpenState[key]===true);
   renderAll();
 }
 
@@ -589,6 +606,56 @@ function clearAllData(){
   localStorage.removeItem(STORE_KEY);
   load();renderAll();
   toast('All data cleared');
+}
+
+function loadSampleData(){
+  const hasData=S.investments.length||S.insurance.length||S.goals.length||S.accounts.length||S.nominees.length||S.documents.length||S.contacts.length;
+  if(hasData&&!confirm('This will add sample entries alongside anything already saved. Continue?'))return;
+
+  S.profile.p1='Nagendra';
+  S.profile.p2='Renuka';
+
+  S.investments.push(
+    {id:uid(),name:'Nifty 50 Index Fund',itype:'Mutual Fund',heldBy:'Nagendra',platform:'Zerodha Coin',value:450000,nominee:'Renuka',notes:'Core equity SIP — 25% allocation'},
+    {id:uid(),name:'Nifty Next 50 Index Fund',itype:'Mutual Fund',heldBy:'Nagendra',platform:'Zerodha Coin',value:320000,nominee:'Renuka',notes:'Core equity SIP — 25% allocation'},
+    {id:uid(),name:'Bandhan Small Cap Fund',itype:'Mutual Fund',heldBy:'Nagendra',platform:'Zerodha Coin',value:410000,nominee:'Renuka',notes:'Active satellite holding'},
+    {id:uid(),name:'EPF',itype:'EPF',heldBy:'Nagendra',platform:'EPFO',value:850000,nominee:'Renuka',notes:'Employer + employee contribution'},
+    {id:uid(),name:'PPF',itype:'PPF',heldBy:'Nagendra',platform:'IDFC First Bank',value:275000,nominee:'Renuka',notes:''}
+  );
+
+  S.insurance.push(
+    {id:uid(),itype:'Term Life',provider:'HDFC Life',policyNo:'TL-2024-88213',sumAssured:10000000,premium:14500,dueMonth:'June',holder:'Nagendra',nominee:'Renuka',notes:'Pure term plan, 30-year cover'},
+    {id:uid(),itype:'Health',provider:'ICICI Lombard',policyNo:'HL-2025-40217',sumAssured:1000000,premium:22000,dueMonth:'March',holder:'Both',nominee:'',notes:'Family floater covering both + son'}
+  );
+
+  S.goals.push(
+    {id:uid(),name:'Son Education',target:10000000,saved:1500000,notes:'11-year horizon'},
+    {id:uid(),name:'Village Home',target:5000000,saved:800000,notes:'Debt-free purchase, 5-year plan'}
+  );
+
+  S.accounts.push(
+    {id:uid(),name:'IDFC First Bank',atype:'Savings Account',heldBy:'Nagendra',detail:'₹8.2L — Emergency Fund',notes:'12 months of expenses'},
+    {id:uid(),name:'HDFC Bank',atype:'Savings Account',heldBy:'Renuka',detail:'Primary account for stitching business',notes:''}
+  );
+
+  S.nominees.push(
+    {id:uid(),asset:'Zerodha Demat & Coin',nomineeName:'Renuka',relation:'Spouse',contact:'',notes:''},
+    {id:uid(),asset:'HDFC Life Term Policy',nomineeName:'Renuka',relation:'Spouse',contact:'',notes:''},
+    {id:uid(),asset:'EPF Account',nomineeName:'Renuka',relation:'Spouse',contact:'',notes:''}
+  );
+
+  S.documents.push(
+    {id:uid(),name:'Insurance Policy PDFs',location:'Google Drive > Family > Insurance',notes:''},
+    {id:uid(),name:'Property & Investment Papers',location:'Steel almirah, bedroom — top shelf',notes:'Physical copies of PPF passbook, FD receipts'}
+  );
+
+  S.contacts.push(
+    {id:uid(),name:'Ramesh Kumar',role:'Insurance Agent',phone:'+91 98765 43210',notes:'HDFC Life & ICICI Lombard'},
+    {id:uid(),name:'Priya Sharma, CA',role:'Chartered Accountant',phone:'+91 91234 56789',notes:'Handles tax filing'}
+  );
+
+  save();renderAll();
+  toast('Sample data loaded ✓');
 }
 
 /* ===================== SHARE SUMMARY ===================== */
