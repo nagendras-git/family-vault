@@ -333,7 +333,19 @@ function fmtFull(n){
   return(n<0?'-':'')+'\u20B9'+formatted;
 }
 function esc(s){return(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._th);window._th=setTimeout(()=>t.classList.remove('show'),1900)}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.remove('show');
+  void t.offsetWidth;
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      t.classList.add('show');
+    });
+  });
+  clearTimeout(window._th);
+  window._th=setTimeout(()=>t.classList.remove('show'),1900);
+}
 
 /* ===================== SECTION SCHEMAS ===================== */
 const ICONS={
