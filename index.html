@@ -156,6 +156,9 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 .card-hdr:active{background:var(--surface2)}
 .card-hdr .card-title{margin-bottom:0}
 .card-body-inner{padding:0 16px 16px}
+.home-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:4px;margin-bottom:14px}
+.home-tab-btn{flex:1;border:none;background:transparent;color:var(--text3);font-family:inherit;font-size:.8rem;font-weight:700;padding:9px 0;border-radius:calc(var(--r-lg) - 4px);cursor:pointer;transition:all 150ms}
+.home-tab-btn.on{background:var(--blue);color:#fff}
 
 .toast{position:fixed;bottom:calc(var(--nav-h)+12px+var(--safe-b));left:50%;transform:translateX(-50%) translateY(6px);background:var(--surface);border:1px solid var(--border);color:var(--text1);padding:9px 20px;border-radius:99px;font-size:.86rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s var(--spring);white-space:nowrap;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -206,6 +209,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
           <div class="summary-cell-val" id="sum-ef-months">—</div>
         </div>
       </div>
+    </div>
+
+    <div class="home-tabs" id="home-tabs">
+      <button class="home-tab-btn on" id="hometab-finances" onclick="switchHomeTab('finances')">Finances</button>
+      <button class="home-tab-btn" id="hometab-records" onclick="switchHomeTab('records')">Records</button>
     </div>
 
     <div id="sections-root"></div>
@@ -514,6 +522,19 @@ const SECTIONS=[
   }
 ];
 const secOpenState={};
+let homeTab='finances';
+const HOME_TAB_GROUPS={
+  finances:['investments','insurance','goals','accounts'],
+  records:['nominees','documents','expenses','contacts']
+};
+
+function switchHomeTab(tab){
+  homeTab=tab;
+  document.getElementById('hometab-finances').classList.toggle('on',tab==='finances');
+  document.getElementById('hometab-records').classList.toggle('on',tab==='records');
+  const root=document.getElementById('sections-root');
+  root.innerHTML=SECTIONS.filter(sec=>HOME_TAB_GROUPS[homeTab].includes(sec.key)).map(sec=>renderSectionHTML(sec)).join('');
+}
 
 /* ===================== RENDER: HOME ===================== */
 function renderAll(){
@@ -535,7 +556,7 @@ function renderAll(){
   document.getElementById('sum-ef-months').textContent=monthlyExpenses>0?(Math.round(efMonths*10)/10)+' mo':'—';
 
   const root=document.getElementById('sections-root');
-  root.innerHTML=SECTIONS.map(sec=>renderSectionHTML(sec)).join('');
+  root.innerHTML=SECTIONS.filter(sec=>HOME_TAB_GROUPS[homeTab].includes(sec.key)).map(sec=>renderSectionHTML(sec)).join('');
 }
 
 function renderSectionHTML(sec){
