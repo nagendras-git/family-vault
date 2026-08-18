@@ -185,7 +185,7 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 
     <div class="summary-card">
       <div class="summary-top">
-        <div class="summary-eyebrow">Total Investments</div>
+        <div class="summary-eyebrow">Total Net Worth</div>
         <div class="summary-big" id="sum-invest">₹0</div>
       </div>
       <div class="summary-grid">
@@ -523,11 +523,12 @@ function renderAll(){
   document.getElementById('set-ef').value=S.emergencyFund>0?S.emergencyFund:'';
 
   const totalInvest=S.investments.reduce((a,i)=>a+Number(i.value||0),0);
+  const netWorth=totalInvest+Number(S.emergencyFund||0);
   const lifeCover=S.insurance.filter(i=>i.itype==='Term Life').reduce((a,i)=>a+Number(i.sumAssured||0),0);
   const healthCover=S.insurance.filter(i=>i.itype==='Health').reduce((a,i)=>a+Number(i.sumAssured||0),0);
   const monthlyExpenses=S.expenses.reduce((a,i)=>a+Number(i.amount||0),0);
   const efMonths=monthlyExpenses>0?(S.emergencyFund/monthlyExpenses):0;
-  document.getElementById('sum-invest').textContent=L(totalInvest);
+  document.getElementById('sum-invest').textContent=L(netWorth);
   document.getElementById('sum-life').textContent=L(lifeCover);
   document.getElementById('sum-health').textContent=L(healthCover);
   document.getElementById('sum-ef').textContent=L(S.emergencyFund);
