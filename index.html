@@ -151,6 +151,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:14px 16px;margin-bottom:10px}
 .card-title{font-size:.86rem;font-weight:700;color:var(--text1);margin-bottom:2px}
 .card-sub{font-size:.72rem;color:var(--text3);margin-bottom:10px}
+.card.collapsible{padding:0;overflow:hidden}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none;gap:10px}
+.card-hdr:active{background:var(--surface2)}
+.card-hdr .card-title{margin-bottom:0}
+.card-body-inner{padding:0 16px 16px}
 
 .toast{position:fixed;bottom:calc(var(--nav-h)+12px+var(--safe-b));left:50%;transform:translateX(-50%) translateY(6px);background:var(--surface);border:1px solid var(--border);color:var(--text1);padding:9px 20px;border-radius:99px;font-size:.86rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s var(--spring);white-space:nowrap;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -212,63 +217,112 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 <div class="page" id="page-settings">
   <div class="container">
 
-    <div class="card">
-      <div class="card-title">Family Names</div>
-      <div class="card-sub">Used to label who each entry belongs to</div>
-      <div class="form-row2">
-        <div class="fg"><label class="fl">Person 1</label><input class="fi" id="set-p1" placeholder="e.g. Nagendra" oninput="saveProfile()"></div>
-        <div class="fg" style="margin-bottom:0"><label class="fl">Person 2</label><input class="fi" id="set-p2" placeholder="e.g. Renuka" oninput="saveProfile()"></div>
+    <div class="card collapsible">
+      <div class="card-hdr" onclick="toggleSettingsCard('names')">
+        <div class="card-title">Family Names</div>
+        <span class="sec-caret" id="caret-set-names"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Emergency Fund</div>
-      <div class="card-sub">Total corpus set aside for emergencies (bank savings, liquid funds, etc). Shown on the Home screen alongside how many months of your Home Expenses it covers.</div>
-      <div class="fg" style="margin-bottom:0"><label class="fl">Current Amount (₹)</label><input class="fi" id="set-ef" type="number" inputmode="decimal" placeholder="0" oninput="saveEmergencyFund()"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Appearance</div>
-      <div class="settings-row">
-        <div>
-          <div class="settings-lbl">Text size</div>
-          <div class="settings-sub">Adjust to your comfort level</div>
-        </div>
-        <div class="size-btns">
-          <button class="sz-btn" id="sz14" onclick="setSize(14)">S</button>
-          <button class="sz-btn on" id="sz16" onclick="setSize(16)">M</button>
-          <button class="sz-btn" id="sz18" onclick="setSize(18)">L</button>
-          <button class="sz-btn" id="sz20" onclick="setSize(20)">XL</button>
+      <div class="sec-body closed" id="setbody-names">
+        <div class="card-body-inner">
+          <div class="card-sub">Used to label who each entry belongs to</div>
+          <div class="form-row2">
+            <div class="fg"><label class="fl">Husband</label><input class="fi" id="set-p1" placeholder="e.g. Nagendra" oninput="saveProfile()"></div>
+            <div class="fg" style="margin-bottom:0"><label class="fl">Wife</label><input class="fi" id="set-p2" placeholder="e.g. Renuka" oninput="saveProfile()"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Share with your spouse</div>
-      <div class="card-sub">Send a readable text snapshot of everything in the vault — no app install needed on the other end.</div>
-      <button class="btn btn-primary btn-full" onclick="shareSummary()">Share Summary</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Backup &amp; Sync</div>
-      <div class="card-sub">This app stores data only on this device. To keep both phones in sync, export a backup file here and import it on the other phone (share the file via WhatsApp, AirDrop, or Drive).</div>
-      <div style="display:flex;gap:9px">
-        <button class="btn btn-ghost" style="flex:1" onclick="exportData()">Export Backup</button>
-        <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('import-file').click()">Import Backup</button>
+    <div class="card collapsible">
+      <div class="card-hdr" onclick="toggleSettingsCard('ef')">
+        <div class="card-title">Emergency Fund</div>
+        <span class="sec-caret" id="caret-set-ef"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
       </div>
-      <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(this)">
+      <div class="sec-body closed" id="setbody-ef">
+        <div class="card-body-inner">
+          <div class="card-sub">Total corpus set aside for emergencies (bank savings, liquid funds, etc). Shown on the Home screen alongside how many months of your Home Expenses it covers.</div>
+          <div class="fg" style="margin-bottom:0"><label class="fl">Current Amount (₹)</label><input class="fi" id="set-ef" type="number" inputmode="decimal" placeholder="0" oninput="saveEmergencyFund()"></div>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Demo Data</div>
-      <div class="card-sub">Load realistic sample entries to explore the app. You can clear everything below once you're ready to enter your own details.</div>
-      <button class="btn btn-ghost btn-full" onclick="loadSampleData()">Load Sample Data</button>
+    <div class="card collapsible">
+      <div class="card-hdr" onclick="toggleSettingsCard('appearance')">
+        <div class="card-title">Appearance</div>
+        <span class="sec-caret" id="caret-set-appearance"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+      <div class="sec-body closed" id="setbody-appearance">
+        <div class="card-body-inner">
+          <div class="settings-row">
+            <div>
+              <div class="settings-lbl">Text size</div>
+              <div class="settings-sub">Adjust to your comfort level</div>
+            </div>
+            <div class="size-btns">
+              <button class="sz-btn" id="sz14" onclick="setSize(14)">S</button>
+              <button class="sz-btn on" id="sz16" onclick="setSize(16)">M</button>
+              <button class="sz-btn" id="sz18" onclick="setSize(18)">L</button>
+              <button class="sz-btn" id="sz20" onclick="setSize(20)">XL</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-title" style="color:var(--red)">Danger Zone</div>
-      <div class="card-sub">Permanently erase everything stored in this app on this device.</div>
-      <button class="btn btn-ghost btn-full" style="color:var(--red)" onclick="clearAllData()">Clear All Data</button>
+    <div class="card collapsible">
+      <div class="card-hdr" onclick="toggleSettingsCard('share')">
+        <div class="card-title">Share with your spouse</div>
+        <span class="sec-caret" id="caret-set-share"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+      <div class="sec-body closed" id="setbody-share">
+        <div class="card-body-inner">
+          <div class="card-sub">Send a readable text snapshot of everything in the vault — no app install needed on the other end.</div>
+          <button class="btn btn-primary btn-full" onclick="shareSummary()">Share Summary</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card collapsible">
+      <div class="card-hdr" onclick="toggleSettingsCard('backup')">
+        <div class="card-title">Backup &amp; Sync</div>
+        <span class="sec-caret" id="caret-set-backup"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+      <div class="sec-body closed" id="setbody-backup">
+        <div class="card-body-inner">
+          <div class="card-sub">This app stores data only on this device. To keep both phones in sync, export a backup file here and import it on the other phone (share the file via WhatsApp, AirDrop, or Drive).</div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-ghost" style="flex:1" onclick="exportData()">Export Backup</button>
+            <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('import-file').click()">Import Backup</button>
+          </div>
+          <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(this)">
+        </div>
+      </div>
+    </div>
+
+    <div class="card collapsible">
+      <div class="card-hdr" onclick="toggleSettingsCard('demo')">
+        <div class="card-title">Demo Data</div>
+        <span class="sec-caret" id="caret-set-demo"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+      <div class="sec-body closed" id="setbody-demo">
+        <div class="card-body-inner">
+          <div class="card-sub">Load realistic sample entries to explore the app. You can clear everything below once you're ready to enter your own details.</div>
+          <button class="btn btn-ghost btn-full" onclick="loadSampleData()">Load Sample Data</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card collapsible">
+      <div class="card-hdr" onclick="toggleSettingsCard('danger')">
+        <div class="card-title" style="color:var(--red)">Danger Zone</div>
+        <span class="sec-caret" id="caret-set-danger"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+      <div class="sec-body closed" id="setbody-danger">
+        <div class="card-body-inner">
+          <div class="card-sub">Permanently erase everything stored in this app on this device.</div>
+          <button class="btn btn-ghost btn-full" style="color:var(--red)" onclick="clearAllData()">Clear All Data</button>
+        </div>
+      </div>
     </div>
 
     <p style="text-align:center;font-size:.74rem;color:var(--text3);margin-top:14px">Your data stays on your device only 🔒</p>
@@ -306,7 +360,7 @@ let S=null;
 function load(){
   try{S=JSON.parse(localStorage.getItem(STORE_KEY))}catch(e){S=null}
   if(!S)S={};
-  if(!S.profile)S.profile={p1:'Person 1',p2:'Person 2'};
+  if(!S.profile)S.profile={p1:'Husband',p2:'Wife'};
   ['investments','insurance','goals','accounts','nominees','documents','contacts','expenses'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
   if(S.emergencyFund==null)S.emergencyFund=0;
   if(S.hasSampleData==null)S.hasSampleData=false;
@@ -358,8 +412,8 @@ const ICONS={
   phone:'<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>',
   home:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'
 };
-function personOpts(){return[S.profile.p1||'Person 1',S.profile.p2||'Person 2','Joint']}
-function personOptsBoth(){return[S.profile.p1||'Person 1',S.profile.p2||'Person 2','Both']}
+function personOpts(){return[S.profile.p1||'Husband',S.profile.p2||'Wife','Joint']}
+function personOptsBoth(){return[S.profile.p1||'Husband',S.profile.p2||'Wife','Both']}
 
 const SECTIONS=[
   {key:'investments',title:'Investments',icon:'invest',singular:'Investment',
@@ -463,9 +517,9 @@ const secOpenState={};
 
 /* ===================== RENDER: HOME ===================== */
 function renderAll(){
-  document.getElementById('hdr-people').textContent=(S.profile.p1||'Person 1')+' & '+(S.profile.p2||'Person 2');
-  document.getElementById('set-p1').value=S.profile.p1==='Person 1'?'':(S.profile.p1||'');
-  document.getElementById('set-p2').value=S.profile.p2==='Person 2'?'':(S.profile.p2||'');
+  document.getElementById('hdr-people').textContent=(S.profile.p1||'Husband')+' & '+(S.profile.p2||'Wife');
+  document.getElementById('set-p1').value=S.profile.p1==='Husband'?'':(S.profile.p1||'');
+  document.getElementById('set-p2').value=S.profile.p2==='Wife'?'':(S.profile.p2||'');
   document.getElementById('set-ef').value=S.emergencyFund>0?S.emergencyFund:'';
 
   const totalInvest=S.investments.reduce((a,i)=>a+Number(i.value||0),0);
@@ -515,6 +569,10 @@ function renderSectionHTML(sec){
   </div>
   <div class="sec-body ${isOpen?'':'closed'}" id="secbody-${sec.key}">
     <div class="row-list">${rows}</div>
+    ${sec.key==='investments'?`<div class="add-row" style="margin-bottom:6px" onclick="event.stopPropagation();openImportInvestSheet()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Import from Zerodha (XLSX)
+    </div>`:''}
     <div class="add-row" onclick="event.stopPropagation();openItemSheet('${sec.key}',null)">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add ${sec.singular}
@@ -598,6 +656,318 @@ function deleteItem(sectionKey,itemId){
   save();closeSheet();renderAll();toast('Deleted');
 }
 
+/* ══════════════════════════════════════════════════
+   IMPORT INVESTMENTS — from Zerodha Kite XLSX export
+   ══════════════════════════════════════════════════ */
+
+function _ivCleanName(raw){
+  if(!raw) return '';
+  return raw.trim()
+    .replace(/\s*-\s*DIRECT\s*(PLAN)?\s*$/i,'')
+    .replace(/\s*-\s*GROWTH\s*$/i,'')
+    .replace(/-E$/,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+// Use Zerodha's Instrument Type field (e.g. "{Debt - Liquid true}", "ETF") for accurate classification
+function _ivGuessCatFromType(name,typeRaw){
+  if(typeRaw==='etf'||/^goldbees|^mon100|bees$|-e$/.test((name||'').toLowerCase())) return 'ETF';
+  return 'MutualFunds';
+}
+// Map parsed category to the vault's Investment "Type" field
+function _ivItypeForCategory(cat){ return cat==='ETF' ? 'Stocks' : 'Mutual Fund'; }
+
+// Parse XLSX file from Kite export → array of {name, category, currentValue, invested}
+// Supports: A) MF Holdings export (columns: Fund, Folio, Avg Cost, Last Price, Qty, …)
+//           B) ETF/Equity Holdings export (columns: Instrument, Qty, Avg Cost, Last Price, …)
+function _ivParseXLSXToRows(arrayBuffer){
+  return new Promise((resolve,reject)=>{
+    try{
+      if(typeof XLSX==='undefined'){
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        s.onload=()=>{ try{resolve(_ivDoParseXLSX(arrayBuffer))}catch(e){reject(e)} };
+        s.onerror=()=>reject(new Error('Failed to load XLSX library'));
+        document.head.appendChild(s);
+      } else {
+        resolve(_ivDoParseXLSX(arrayBuffer));
+      }
+    }catch(e){reject(e)}
+  });
+}
+
+function _ivDoParseXLSX(arrayBuffer){
+  const wb=XLSX.read(arrayBuffer,{type:'array'});
+  const results=[];
+  const seen=new Set(); // deduplicate across sheets (Combined sheet repeats MF+Equity)
+
+  const sheetOrder=['Mutual Funds','Equity',...wb.SheetNames.filter(s=>s!=='Mutual Funds'&&s!=='Equity'&&s!=='Combined')];
+  const sheetsToProcess=sheetOrder.filter(s=>wb.SheetNames.includes(s));
+
+  sheetsToProcess.forEach(sheetName=>{
+    const ws=wb.Sheets[sheetName];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    if(!rows.length) return;
+
+    // Scan ALL rows for the header (Zerodha puts it at row 23, far below top)
+    let hdrIdx=-1, hdr=[];
+    for(let i=0;i<rows.length;i++){
+      const r=rows[i].map(c=>(c+'').toLowerCase().trim());
+      if(r.some(c=>c==='symbol'||c==='scheme'||c==='fund name')){ hdrIdx=i; hdr=r; break; }
+    }
+    if(hdrIdx<0) return;
+
+    const col=(...keywords)=>{
+      for(const kw of keywords){
+        const i=hdr.findIndex(h=>h===kw||h.includes(kw));
+        if(i>=0) return i;
+      }
+      return -1;
+    };
+
+    const iName=col('symbol','scheme','fund name','instrument');
+    const iAvg =col('average price','avg price','average cost','avg cost','purchase price');
+    const iNav =col('previous closing price','last price','closing price','current price','nav','ltp','close price');
+    const iQty =col('quantity available','quantity','qty','units');
+    const iType=col('instrument type','sector');
+
+    if(iName<0||iQty<0) return;
+
+    for(let r=hdrIdx+1;r<rows.length;r++){
+      const row=rows[r];
+      const rawName=(row[iName]+'').trim();
+      if(!rawName||rawName==='-') continue;
+      if(/^(total|grand total|summary|invested value|present value|unrealized)/i.test(rawName)) continue;
+
+      const qty=parseFloat((row[iQty]+'').replace(/[,\s]/g,''))||0;
+      const avgCost=iAvg>=0?parseFloat((row[iAvg]+'').replace(/[₹,\s]/g,''))||0:0;
+      const lastNav=iNav>=0?parseFloat((row[iNav]+'').replace(/[₹,\s]/g,''))||0:0;
+
+      if(qty<=0) continue;
+
+      const name=_ivCleanName(rawName);
+      if(seen.has(name.toLowerCase())) continue; // skip duplicate from Combined sheet
+      seen.add(name.toLowerCase());
+
+      const typeRaw=iType>=0?(row[iType]+'').toLowerCase():'';
+      const category=_ivGuessCatFromType(rawName,typeRaw);
+      const invested=Math.round(qty*avgCost);
+      const currentValue=lastNav>0?Math.round(qty*lastNav):invested;
+
+      results.push({name,category,invested,currentValue});
+    }
+  });
+
+  return results;
+}
+
+// State for the import sheet
+let _ivImportRows=[];
+
+function openImportInvestSheet(){
+  const opts=personOpts();
+  const html=`<div class="sheet-hdr">
+    <div class="sheet-title">Import Investments</div>
+    <button class="sheet-close" onclick="closeSheet()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="sheet-body">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;margin-bottom:14px;font-size:0.72rem;color:var(--text2);line-height:1.6">
+      <strong style="color:var(--text1)">How to export from Zerodha Kite:</strong><br>
+      Console → Reports → Holdings → Export (XLSX)<br>
+      <span style="color:var(--text3)">Works with MF Holdings and ETF/Equity Holdings exports.</span>
+    </div>
+
+    <div class="form-row2">
+      <div class="fg"><label class="fl">Held By</label>
+        <select class="fi fi-sel" id="iv-heldby">${opts.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('')}</select>
+      </div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Platform</label><input class="fi" id="iv-platform" value="Zerodha"></div>
+    </div>
+
+    <div id="iv-upload-area" style="border:2px dashed var(--border);border-radius:var(--r-lg);padding:28px 16px;text-align:center;cursor:pointer;transition:border-color 150ms;margin-bottom:12px" onclick="document.getElementById('iv-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="event.preventDefault();this.style.borderColor='var(--border)';_ivHandleImportDrop(event)">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;margin:0 auto 8px;display:block"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div style="font-size:0.82rem;font-weight:600;color:var(--text1);margin-bottom:3px">Tap to choose XLSX file</div>
+      <div style="font-size:0.68rem;color:var(--text3)">or drag &amp; drop your Kite export here</div>
+    </div>
+    <input type="file" id="iv-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="_ivHandleImportFile(this)"/>
+
+    <div id="iv-preview" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--text1)" id="iv-preview-title">0 found</div>
+        <button onclick="_ivSelectAll(true)" style="font-size:0.68rem;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;padding:2px 0">Select all</button>
+      </div>
+      <div id="iv-fund-list" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;max-height:320px;overflow-y:auto;margin-bottom:12px"></div>
+      <div id="iv-notice" style="font-size:0.68rem;color:var(--amber);background:var(--amber-bg);border:1px solid rgba(251,191,36,0.2);border-radius:var(--r);padding:8px 10px;margin-bottom:12px;display:none"></div>
+      <div class="form-actions" style="margin-top:0">
+        <button class="btn btn-ghost" onclick="document.getElementById('iv-preview').style.display='none';document.getElementById('iv-upload-area').style.display='';_ivImportRows=[]">Back</button>
+        <button class="btn btn-primary" id="iv-confirm-btn" onclick="_ivDoImport()">Import Selected</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('sheet-content').innerHTML=html;
+  openSheetEl();
+}
+
+function _ivHandleImportDrop(e){
+  const file=e.dataTransfer?.files?.[0];
+  if(file) _ivProcessImportFile(file);
+}
+function _ivHandleImportFile(input){
+  const file=input.files?.[0];
+  if(file) _ivProcessImportFile(file);
+  input.value='';
+}
+function _ivUploadPlaceholder(){
+  return `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;margin:0 auto 8px;display:block"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><div style="font-size:0.82rem;font-weight:600;color:var(--text1);margin-bottom:3px">Tap to choose XLSX file</div><div style="font-size:0.68rem;color:var(--text3)">or drag &amp; drop your Kite export here</div>`;
+}
+function _ivProcessImportFile(file){
+  const uploadArea=document.getElementById('iv-upload-area');
+  if(uploadArea) uploadArea.innerHTML='<div style="text-align:center;padding:8px;font-size:0.8rem;color:var(--text3)">Reading file…</div>';
+
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    try{
+      const rows=await _ivParseXLSXToRows(e.target.result);
+      _ivImportRows=rows;
+      if(!rows.length){
+        toast('No investment data found in file');
+        if(uploadArea){uploadArea.style.display='';uploadArea.innerHTML=_ivUploadPlaceholder();}
+        return;
+      }
+      _ivRenderImportPreview();
+    }catch(err){
+      toast('Could not read file: '+err.message);
+      if(uploadArea){uploadArea.style.display='';uploadArea.innerHTML=_ivUploadPlaceholder();}
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function _ivRenderImportPreview(){
+  const uploadArea=document.getElementById('iv-upload-area');
+  const preview=document.getElementById('iv-preview');
+  const list=document.getElementById('iv-fund-list');
+  const title=document.getElementById('iv-preview-title');
+  const notice=document.getElementById('iv-notice');
+  if(!preview||!list) return;
+
+  if(uploadArea) uploadArea.style.display='none';
+  preview.style.display='';
+
+  const heldBy=document.getElementById('iv-heldby')?.value||personOpts()[0];
+  const platform=(document.getElementById('iv-platform')?.value||'Zerodha').trim();
+
+  // Check which existing investments (same held-by + platform) would be updated
+  const existingNames=new Set(S.investments.filter(x=>x.heldBy===heldBy&&(x.platform||'').toLowerCase()===platform.toLowerCase()).map(x=>(x.name||'').toLowerCase()));
+
+  let replaceCount=0;
+
+  list.innerHTML=_ivImportRows.map((f,i)=>{
+    const isExisting=existingNames.has(f.name.toLowerCase());
+    if(isExisting) replaceCount++;
+    return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border2);cursor:pointer" id="iv-row-${i}" onclick="_ivToggleImportRow(${i})">
+      <div id="iv-chk-${i}" style="width:18px;height:18px;border-radius:5px;border:2px solid var(--border);background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 120ms;border-color:var(--blue);background:rgba(59,130,246,0.12)">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <div style="font-size:0.82rem;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">${esc(f.name)}</div>
+          ${isExisting?'<span style="font-size:0.6rem;font-weight:700;color:var(--amber);background:var(--amber-bg);border:1px solid rgba(251,191,36,0.25);padding:1px 5px;border-radius:99px;flex-shrink:0">UPDATE</span>':'<span style="font-size:0.6rem;font-weight:700;color:var(--blue);background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);padding:1px 5px;border-radius:99px;flex-shrink:0">NEW</span>'}
+        </div>
+        <span style="font-size:0.68rem;color:var(--text3)">${_ivItypeForCategory(f.category)} · ${L(f.currentValue)}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  if(title) title.textContent=_ivImportRows.length+(_ivImportRows.length!==1?' investments found':' investment found');
+
+  if(notice){
+    if(replaceCount>0){
+      notice.style.display='';
+      notice.textContent=`⚠️ ${replaceCount} existing investment${replaceCount>1?'s':''} for ${esc(heldBy)} will have their value updated. Nothing will be deleted.`;
+    } else {
+      notice.style.display='none';
+    }
+  }
+  _ivUpdateImportBtn();
+}
+
+function _ivToggleImportRow(i){
+  const chk=document.getElementById('iv-chk-'+i);
+  if(!chk)return;
+  const selected=chk.dataset.sel!=='0';
+  if(selected){
+    chk.dataset.sel='0';
+    chk.style.borderColor='var(--border)';
+    chk.style.background='var(--surface2)';
+    chk.innerHTML='';
+  } else {
+    chk.dataset.sel='';
+    chk.style.borderColor='var(--blue)';
+    chk.style.background='rgba(59,130,246,0.12)';
+    chk.innerHTML='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  }
+  _ivUpdateImportBtn();
+}
+function _ivSelectAll(on){
+  _ivImportRows.forEach((_,i)=>{
+    const chk=document.getElementById('iv-chk-'+i);
+    if(!chk)return;
+    if(on){
+      chk.dataset.sel='';
+      chk.style.borderColor='var(--blue)';
+      chk.style.background='rgba(59,130,246,0.12)';
+      chk.innerHTML='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else {
+      chk.dataset.sel='0';
+      chk.style.borderColor='var(--border)';
+      chk.style.background='var(--surface2)';
+      chk.innerHTML='';
+    }
+  });
+  _ivUpdateImportBtn();
+}
+function _ivUpdateImportBtn(){
+  const btn=document.getElementById('iv-confirm-btn');
+  if(!btn)return;
+  const count=_ivImportRows.filter((_,i)=>document.getElementById('iv-chk-'+i)?.dataset?.sel!=='0').length;
+  btn.textContent=count>0?'Import '+count+' Investment'+(count!==1?'s':''):'Import Selected';
+  btn.disabled=count===0;
+  btn.style.opacity=count===0?'0.45':'1';
+}
+
+function _ivDoImport(){
+  const heldBy=document.getElementById('iv-heldby')?.value||personOpts()[0];
+  const platform=(document.getElementById('iv-platform')?.value||'Zerodha').trim()||'Zerodha';
+  const toImport=_ivImportRows.filter((_,i)=>document.getElementById('iv-chk-'+i)?.dataset?.sel!=='0');
+  if(!toImport.length){toast('Select at least one investment');return;}
+
+  let added=0,updated=0;
+  toImport.forEach(f=>{
+    const itype=_ivItypeForCategory(f.category);
+    // Upsert: match by name (case-insensitive) within same Held By + Platform
+    const existing=S.investments.find(x=>x.heldBy===heldBy&&(x.platform||'').toLowerCase()===platform.toLowerCase()&&(x.name||'').toLowerCase()===f.name.toLowerCase());
+    if(existing){
+      existing.itype=itype;
+      existing.value=f.currentValue;
+      updated++;
+    } else {
+      S.investments.push({id:uid(),name:f.name,itype,heldBy,platform,value:f.currentValue,nominee:'',notes:''});
+      added++;
+    }
+  });
+
+  save();
+  closeSheet();
+  secOpenState['investments']=true; // ensure the section is visible after import
+  renderAll();
+
+  const parts=[];
+  if(added) parts.push(added+' added');
+  if(updated) parts.push(updated+' updated');
+  toast('✓ '+parts.join(', '));
+}
+
 function openSheetEl(){
   document.getElementById('sheet-overlay').classList.add('open');
   document.getElementById('sheet').classList.add('open');
@@ -648,9 +1018,16 @@ function showAlert(message,title){
 }
 
 /* ===================== SETTINGS ===================== */
+function toggleSettingsCard(key){
+  const body=document.getElementById('setbody-'+key);
+  const caret=document.getElementById('caret-set-'+key);
+  if(!body)return;
+  body.classList.toggle('closed');
+  if(caret)caret.classList.toggle('open');
+}
 function saveProfile(){
-  S.profile.p1=document.getElementById('set-p1').value.trim()||'Person 1';
-  S.profile.p2=document.getElementById('set-p2').value.trim()||'Person 2';
+  S.profile.p1=document.getElementById('set-p1').value.trim()||'Husband';
+  S.profile.p2=document.getElementById('set-p2').value.trim()||'Wife';
   save();
   document.getElementById('hdr-people').textContent=S.profile.p1+' & '+S.profile.p2;
 }
@@ -692,7 +1069,7 @@ function importData(input){
       const parsed=JSON.parse(e.target.result);
       if(!parsed||typeof parsed!=='object')throw new Error('bad format');
       S=parsed;
-      if(!S.profile)S.profile={p1:'Person 1',p2:'Person 2'};
+      if(!S.profile)S.profile={p1:'Husband',p2:'Wife'};
       ['investments','insurance','goals','accounts','nominees','documents','contacts'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
       save();renderAll();
       toast('Backup imported ✓');
@@ -783,7 +1160,7 @@ function loadSampleData(){
 
 /* ===================== SHARE SUMMARY ===================== */
 function generateSummaryText(){
-  const p1=S.profile.p1||'Person 1',p2=S.profile.p2||'Person 2';
+  const p1=S.profile.p1||'Husband',p2=S.profile.p2||'Wife';
   const lines=[];
   lines.push('👨‍👩‍👧 FAMILY VAULT — '+p1+' & '+p2);
   lines.push('As of '+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}));
