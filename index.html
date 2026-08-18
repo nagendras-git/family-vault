@@ -66,6 +66,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .summary-cell-val{font-size:1.1rem;font-weight:800;letter-spacing:-.02em}
 
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 11px 10px;cursor:pointer;user-select:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);margin-bottom:8px;transition:background 120ms;gap:10px}
+.sec-hdr.sticky-hdr{position:sticky;top:var(--topbar-h,64px);z-index:15;box-shadow:0 6px 14px -8px rgba(0,0,0,.5)}
 .sec-hdr:active{background:var(--surface2)}
 .sec-hdr-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
 .sec-hdr-icon{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.18);color:var(--blue)}
@@ -577,7 +578,7 @@ function renderSectionHTML(sec){
     </div>`;
   }).join(''):`<div class="empty-row">No ${sec.title.toLowerCase()} added yet</div>`;
 
-  return `<div class="sec-hdr" onclick="toggleSection('${sec.key}')">
+  return `<div class="sec-hdr${isOpen?' sticky-hdr':''}" onclick="toggleSection('${sec.key}')">
     <div class="sec-hdr-left">
       <div class="sec-hdr-icon"><svg viewBox="0 0 24 24">${ICONS[sec.icon]}</svg></div>
       <div>
@@ -1070,6 +1071,7 @@ function setSize(px){
     el.style.color=on?'var(--blue)':'var(--text3)';
   });
   try{localStorage.setItem('familyvault-sz',px)}catch(e){}
+  if(typeof _updateTopbarH==='function')setTimeout(_updateTopbarH,0);
 }
 
 function exportData(){
@@ -1282,6 +1284,17 @@ function switchPage(name){
 load();
 renderAll();
 (function(){try{const s=parseInt(localStorage.getItem('familyvault-sz'));if(s>=14&&s<=20)setSize(s);else setSize(16);}catch(e){setSize(16);}})();
+
+// Measure the sticky top header's real height (varies with safe-area-inset-top)
+// so expanded section headers can stick just below it without overlap.
+function _updateTopbarH(){
+  const el=document.querySelector('.top-header');
+  if(el) document.documentElement.style.setProperty('--topbar-h',el.offsetHeight+'px');
+}
+_updateTopbarH();
+window.addEventListener('resize',_updateTopbarH);
+window.addEventListener('orientationchange',_updateTopbarH);
+
 </script>
 </body>
 </html>
