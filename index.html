@@ -432,7 +432,7 @@ const SECTIONS=[
   {key:'investments',title:'Investments',icon:'invest',singular:'Investment',
     fields:[
       {id:'name',label:'Name',type:'text',required:true,placeholder:'e.g. Nifty 50 Index Fund'},
-      {id:'itype',label:'Type',type:'select',options:['Mutual Fund','Stocks','EPF','PPF','NPS','Fixed Deposit','Gold','Real Estate','Other']},
+      {id:'itype',label:'Type',type:'select',options:['Mutual Fund','ETF','Stocks','US Equity','Gold','EPF','PPF','NPS','Fixed Deposit','Real Estate','Other']},
       {id:'heldBy',label:'Held By',type:'select',options:personOpts},
       {id:'platform',label:'Platform / Broker',type:'text',placeholder:'e.g. Zerodha, Coin'},
       {id:'value',label:'Approx. Current Value (₹)',type:'number'},
@@ -696,13 +696,16 @@ function _ivCleanName(raw){
     .replace(/\s+/g,' ')
     .trim();
 }
-// Use Zerodha's Instrument Type field (e.g. "{Debt - Liquid true}", "ETF") for accurate classification
-function _ivGuessCatFromType(name,typeRaw){
-  if(typeRaw==='etf'||/^goldbees|^mon100|bees$|-e$/.test((name||'').toLowerCase())) return 'ETF';
-  return 'MutualFunds';
+// Use Zerodha's Instrument Type field (e.g. "{Debt - Liquid true}", "ETF") plus name patterns
+// to classify each holding into the vault's Investment "Type" options.
+function _ivClassify(name,typeRaw){
+  const n=(name||'').toLowerCase();
+  const isETF = typeRaw==='etf' || /bees$|-e$/.test(n) || /^(goldbees|mon100|mafang|mom100|masptop50|hngsngbees)/.test(n);
+  if(!isETF) return 'Mutual Fund';
+  if(/gold/.test(n)) return 'Gold';
+  if(/nasdaq|s&p|s and p|sp500|hang\s?seng|fang|nyse|dow\s?jones|global|international|us\s?equity|n100|top50/.test(n)) return 'US Equity';
+  return 'ETF';
 }
-// Map parsed category to the vault's Investment "Type" field
-function _ivItypeForCategory(cat){ return cat==='ETF' ? 'Stocks' : 'Mutual Fund'; }
 
 // Parse XLSX file from Kite export → array of {name, category, currentValue, invested}
 // Supports: A) MF Holdings export (columns: Fund, Folio, Avg Cost, Last Price, Qty, …)
@@ -777,7 +780,7 @@ function _ivDoParseXLSX(arrayBuffer){
       seen.add(name.toLowerCase());
 
       const typeRaw=iType>=0?(row[iType]+'').toLowerCase():'';
-      const category=_ivGuessCatFromType(rawName,typeRaw);
+      const category=_ivClassify(rawName,typeRaw);
       const invested=Math.round(qty*avgCost);
       const currentValue=lastNav>0?Math.round(qty*lastNav):invested;
 
@@ -901,7 +904,7 @@ function _ivRenderImportPreview(){
           <div style="font-size:0.82rem;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">${esc(f.name)}</div>
           ${isExisting?'<span style="font-size:0.6rem;font-weight:700;color:var(--amber);background:var(--amber-bg);border:1px solid rgba(251,191,36,0.25);padding:1px 5px;border-radius:99px;flex-shrink:0">UPDATE</span>':'<span style="font-size:0.6rem;font-weight:700;color:var(--blue);background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);padding:1px 5px;border-radius:99px;flex-shrink:0">NEW</span>'}
         </div>
-        <span style="font-size:0.68rem;color:var(--text3)">${_ivItypeForCategory(f.category)} · ${L(f.currentValue)}</span>
+        <span style="font-size:0.68rem;color:var(--text3)">${esc(f.category)} · ${L(f.currentValue)}</span>
       </div>
     </div>`;
   }).join('');
@@ -971,7 +974,7 @@ function _ivDoImport(){
 
   let added=0,updated=0;
   toImport.forEach(f=>{
-    const itype=_ivItypeForCategory(f.category);
+    const itype=f.category;
     // Upsert: match by name (case-insensitive) within same Held By + Platform
     const existing=S.investments.find(x=>x.heldBy===heldBy&&(x.platform||'').toLowerCase()===platform.toLowerCase()&&(x.name||'').toLowerCase()===f.name.toLowerCase());
     if(existing){
