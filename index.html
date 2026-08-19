@@ -137,6 +137,10 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:99px;margin:10px auto 0}
 .sheet-hdr{position:sticky;top:0;z-index:2;padding:13px 16px 12px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-bottom:1px solid var(--border2)}
 .sheet-title{font-size:.9rem;font-weight:800;color:var(--text1)}
+.success-icon-wrap{display:flex;justify-content:center;padding-top:2px}
+.success-icon-circle{width:60px;height:60px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px var(--green-bg);animation:successPop .45s var(--spring)}
+.success-icon-circle svg{width:28px;height:28px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+@keyframes successPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
 .sheet-close{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.82rem;color:var(--text2);line-height:1}
 .sheet-body{padding:14px 16px}
 
@@ -190,7 +194,7 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
     <div class="summary-card">
       <div class="summary-top">
         <div class="summary-eyebrow">Total Net Worth</div>
-        <div class="summary-big" id="sum-invest">₹0</div>
+        <div class="summary-big" style="color:var(--green)" id="sum-invest">₹0</div>
       </div>
       <div class="summary-grid">
         <div class="summary-cell">
@@ -203,11 +207,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
         </div>
         <div class="summary-cell">
           <div class="summary-cell-lbl">Emergency Fund</div>
-          <div class="summary-cell-val" style="color:var(--blue)" id="sum-ef">₹0</div>
+          <div class="summary-cell-val" style="color:var(--green)" id="sum-ef">₹0</div>
         </div>
         <div class="summary-cell">
           <div class="summary-cell-lbl">Coverage</div>
-          <div class="summary-cell-val" id="sum-ef-months">—</div>
+          <div class="summary-cell-val" style="color:var(--green)" id="sum-ef-months">—</div>
         </div>
       </div>
     </div>
@@ -1025,14 +1029,17 @@ function _confirmYes(){
   if(cb)cb();
 }
 
-function showAlert(message,title){
-  const html=`<div class="sheet-hdr">
-    <div class="sheet-title">${esc(title||'Family Vault')}</div>
+function showAlert(message,title,opts){
+  const success=opts&&opts.success;
+  const html=`<div class="sheet-hdr"${success?' style="border-bottom:none"':''}>
+    <div class="sheet-title">${success?'':esc(title||'Family Vault')}</div>
     <button class="sheet-close" onclick="closeSheet()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
-  <div class="sheet-body">
+  <div class="sheet-body"${success?' style="text-align:center"':''}>
+    ${success?`<div class="success-icon-wrap"><div class="success-icon-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+    <div class="sheet-title" style="display:block;font-size:1.02rem;margin:14px 0 6px">${esc(title||'')}</div>`:''}
     <p style="font-size:.86rem;color:var(--text2);line-height:1.55;margin-bottom:14px">${esc(message)}</p>
     <button class="btn btn-primary btn-full" onclick="closeSheet()">OK</button>
   </div>`;
@@ -1169,7 +1176,7 @@ function loadSampleData(){
     S.hasSampleData=true;
 
     save();renderAll();
-    showAlert('Sample data has been added to your vault — investments, insurance, goals, accounts, and more. Explore the Home tab to see it.','Sample Data Loaded ✓');
+    showAlert('Sample data has been added to your vault — investments, insurance, goals, accounts, and more. Explore the Home tab to see it.','Sample Data Loaded',{success:true});
   };
   if(S.hasSampleData){
     showAlert('Sample data is already loaded in your vault. Use Clear All Data in Settings first if you want to reload it.','Already Loaded');
