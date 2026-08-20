@@ -505,6 +505,7 @@ const SECTIONS=[
     rowValue:i=>''
   },
   {key:'expenses',title:'Home Expenses',icon:'home',singular:'Expense',
+    sumField:'amount',sumSuffix:'/mo',
     fields:[
       {id:'name',label:'Expense',type:'text',required:true,placeholder:'e.g. Rent, Groceries, School Fees'},
       {id:'amount',label:'Monthly Amount (₹)',type:'number',required:true},
@@ -529,8 +530,8 @@ const SECTIONS=[
 const secOpenState={};
 let homeTab='finances';
 const HOME_TAB_GROUPS={
-  finances:['investments','insurance','goals','accounts'],
-  records:['nominees','documents','expenses','contacts']
+  finances:['investments','insurance','goals','accounts','expenses'],
+  records:['nominees','documents','contacts']
 };
 
 function switchHomeTab(tab){
@@ -595,6 +596,10 @@ function renderSectionHTML(sec){
     </div>
   </div>
   <div class="sec-body ${isOpen?'':'closed'}" id="secbody-${sec.key}">
+    ${sec.sumField&&items.length?`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:8px">
+      <span style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Total</span>
+      <span style="font-size:.86rem;font-weight:800;color:var(--blue)">${L(items.reduce((a,i)=>a+Number(i[sec.sumField]||0),0))}${sec.sumSuffix||''}</span>
+    </div>`:''}
     <div class="row-list">${rows}</div>
     ${sec.key==='investments'?`<div class="add-row" style="margin-bottom:6px" onclick="event.stopPropagation();openImportInvestSheet()">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
