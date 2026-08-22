@@ -459,6 +459,7 @@ const SECTIONS=[
     rowValue:i=>i.target?L(i.target):''
   },
   {key:'accounts',title:'Bank Accounts',icon:'bank',singular:'Account',
+    groupByHeldBy:'heldBy',
     fields:[
       {id:'name',label:'Bank / Lender Name',type:'text',required:true,placeholder:'e.g. IDFC First Bank'},
       {id:'atype',label:'Type',type:'select',options:['Savings Account','Fixed Deposit','Recurring Deposit','Loan','Credit Card','Other']},
