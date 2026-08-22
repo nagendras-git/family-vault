@@ -177,6 +177,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 .card-hdr .card-title{margin-bottom:0}
 .card-body-inner{padding:0 16px 16px}
 .home-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:4px;margin-bottom:14px}
+.chip-row{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+.chip-row::-webkit-scrollbar{display:none}
+.chip-row{scrollbar-width:none}
+.chip{flex-shrink:0;padding:9px 18px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;-webkit-appearance:none;font-family:'Inter',sans-serif;transition:all 150ms}
+.chip.on{background:var(--text1);border-color:var(--text1);color:var(--bg);font-weight:700}
 .home-tab-btn{flex:1;border:none;background:transparent;color:var(--text3);font-family:inherit;font-size:.8rem;font-weight:700;padding:9px 0;border-radius:calc(var(--r-lg) - 4px);cursor:pointer;transition:all 150ms}
 .home-tab-btn.on{background:var(--blue);color:#fff}
 
@@ -226,7 +231,7 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
           <div class="summary-cell-val" style="color:var(--green)" id="sum-ef">₹0</div>
         </div>
         <div class="summary-cell">
-          <div class="summary-cell-lbl">Coverage</div>
+          <div class="summary-cell-lbl">Emergency Coverage</div>
           <div class="summary-cell-val" style="color:var(--green)" id="sum-ef-months">—</div>
         </div>
       </div>
@@ -615,16 +620,21 @@ function renderSectionHTML(sec){
     });
     if(persons.length>1){
       multiPerson=true;
-      const selected=secPersonFilter[sec.key]&&persons.includes(secPersonFilter[sec.key])?secPersonFilter[sec.key]:persons[0];
+      const options=['All',...persons];
+      const selected=secPersonFilter[sec.key]&&options.includes(secPersonFilter[sec.key])?secPersonFilter[sec.key]:'All';
       secPersonFilter[sec.key]=selected;
-      const selSubtotal=sec.sumField?map[selected].reduce((a,i)=>a+Number(i[sec.sumField]||0),0):null;
-      personTabsHtml=`<div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 4px 6px">Filter by Person</div><div class="home-tabs" style="margin-bottom:10px" onclick="event.stopPropagation()">
-        ${persons.map(p=>`<button class="home-tab-btn${p===selected?' on':''}" onclick="event.stopPropagation();setSecPersonFilter('${sec.key}','${esc(p)}')">${esc(p)}</button>`).join('')}
+      const selItems=selected==='All'?items:map[selected];
+      const selSubtotal=sec.sumField?selItems.reduce((a,i)=>a+Number(i[sec.sumField]||0),0):null;
+      personTabsHtml=`<div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 14px 6px">Filter by Person</div><div class="chip-row" style="padding:2px 14px 6px" onclick="event.stopPropagation()">
+        ${options.map(p=>{
+          const count=p==='All'?items.length:map[p].length;
+          return `<button class="chip${p===selected?' on':''}" onclick="event.stopPropagation();setSecPersonFilter('${sec.key}','${esc(p)}')">${esc(p)} <span style="opacity:.65;font-weight:600">${count}</span></button>`;
+        }).join('')}
       </div>${selSubtotal!=null?`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 12px">
         <span style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Total</span>
         <span style="font-size:.86rem;font-weight:800;color:var(--text1)">${fmtFull(selSubtotal)}</span>
       </div>`:''}`;
-      rows=map[selected].map(i=>renderItemRowHTML(sec,i)).join('');
+      rows=selItems.map(i=>renderItemRowHTML(sec,i)).join('');
     }else{
       rows=items.map(i=>renderItemRowHTML(sec,i)).join('');
     }
