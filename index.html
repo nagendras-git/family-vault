@@ -618,7 +618,7 @@ function renderSectionHTML(sec){
       const selected=secPersonFilter[sec.key]&&persons.includes(secPersonFilter[sec.key])?secPersonFilter[sec.key]:persons[0];
       secPersonFilter[sec.key]=selected;
       const selSubtotal=sec.sumField?map[selected].reduce((a,i)=>a+Number(i[sec.sumField]||0),0):null;
-      personTabsHtml=`<div class="home-tabs" style="margin-bottom:10px" onclick="event.stopPropagation()">
+      personTabsHtml=`<div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 4px 6px">Filter by Person</div><div class="home-tabs" style="margin-bottom:10px" onclick="event.stopPropagation()">
         ${persons.map(p=>`<button class="home-tab-btn${p===selected?' on':''}" onclick="event.stopPropagation();setSecPersonFilter('${sec.key}','${esc(p)}')">${esc(p)}</button>`).join('')}
       </div>${selSubtotal!=null?`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 12px">
         <span style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Total</span>
