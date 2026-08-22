@@ -169,6 +169,13 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 .theme-toggle.on .theme-toggle-knob{transform:translateX(20px)}
 .sz-btn.on{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:var(--blue)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:14px 16px;margin-bottom:10px}
+.ios-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;margin-bottom:16px}
+.ios-row{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border2)}
+.ios-group>.ios-row:last-child, .ios-group>.sec-body:last-child .ios-row{border-bottom:none}
+.ios-row-icon{width:29px;height:29px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+.ios-row-icon svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ios-row-title{flex:1;font-size:.9rem;font-weight:500;color:var(--text1)}
+.ios-chevron{width:15px;height:15px;stroke:var(--text3);fill:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .card-title{font-size:.86rem;font-weight:700;color:var(--text1);margin-bottom:2px}
 .card-sub{font-size:.72rem;color:var(--text3);margin-bottom:10px}
 .card.collapsible{padding:0;overflow:hidden}
@@ -251,10 +258,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 <div class="page" id="page-settings">
   <div class="container">
 
-    <div class="card collapsible">
-      <div class="card-hdr" onclick="toggleSettingsCard('names')">
-        <div class="card-title">Family Names</div>
-        <span class="sec-caret" id="caret-set-names"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+    <div class="ios-group">
+      <div class="ios-row" onclick="toggleSettingsCard('names')">
+        <div class="ios-row-icon" style="background:#3B82F6"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="ios-row-title">Family Names</div>
+        <svg class="ios-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="sec-body closed" id="setbody-names">
         <div class="card-body-inner">
@@ -265,12 +273,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="card collapsible">
-      <div class="card-hdr" onclick="toggleSettingsCard('ef')">
-        <div class="card-title">Emergency Fund</div>
-        <span class="sec-caret" id="caret-set-ef"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <div class="ios-row" onclick="toggleSettingsCard('ef')">
+        <div class="ios-row-icon" style="background:#22C55E"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg></div>
+        <div class="ios-row-title">Emergency Fund</div>
+        <svg class="ios-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="sec-body closed" id="setbody-ef">
         <div class="card-body-inner">
@@ -280,10 +287,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
       </div>
     </div>
 
-    <div class="card collapsible">
-      <div class="card-hdr" onclick="toggleSettingsCard('appearance')">
-        <div class="card-title">Appearance</div>
-        <span class="sec-caret" id="caret-set-appearance"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+    <div class="ios-group">
+      <div class="ios-row" onclick="toggleSettingsCard('appearance')">
+        <div class="ios-row-icon" style="background:#8B5CF6"><svg viewBox="0 0 24 24"><path d="M21 12.5A9 9 0 1111.5 3a7 7 0 009.5 9.5z"/></svg></div>
+        <div class="ios-row-title">Appearance</div>
+        <svg class="ios-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="sec-body closed" id="setbody-appearance">
         <div class="card-body-inner">
@@ -312,10 +320,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
       </div>
     </div>
 
-    <div class="card collapsible">
-      <div class="card-hdr" onclick="toggleSettingsCard('backup')">
-        <div class="card-title">Backup &amp; Sync</div>
-        <span class="sec-caret" id="caret-set-backup"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+    <div class="ios-group">
+      <div class="ios-row" onclick="toggleSettingsCard('backup')">
+        <div class="ios-row-icon" style="background:#06B6D4"><svg viewBox="0 0 24 24"><path d="M17.5 19H9a5 5 0 01-1-9.9 6 6 0 0111.8-.4A4.5 4.5 0 0117.5 19z"/></svg></div>
+        <div class="ios-row-title">Backup &amp; Sync</div>
+        <svg class="ios-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="sec-body closed" id="setbody-backup">
         <div class="card-body-inner">
@@ -327,12 +336,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
           <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(this)">
         </div>
       </div>
-    </div>
 
-    <div class="card collapsible">
-      <div class="card-hdr" onclick="toggleSettingsCard('demo')">
-        <div class="card-title">Demo Data</div>
-        <span class="sec-caret" id="caret-set-demo"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <div class="ios-row" onclick="toggleSettingsCard('demo')">
+        <div class="ios-row-icon" style="background:#F97316"><svg viewBox="0 0 24 24"><path d="M9 2v6l-5.5 9.5A2 2 0 005.2 21h13.6a2 2 0 001.7-3.5L15 8V2"/><line x1="8" y1="2" x2="16" y2="2"/></svg></div>
+        <div class="ios-row-title">Demo Data</div>
+        <svg class="ios-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="sec-body closed" id="setbody-demo">
         <div class="card-body-inner">
@@ -342,10 +350,11 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
       </div>
     </div>
 
-    <div class="card collapsible">
-      <div class="card-hdr" onclick="toggleSettingsCard('danger')">
-        <div class="card-title" style="color:var(--red)">Danger Zone</div>
-        <span class="sec-caret" id="caret-set-danger"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+    <div class="ios-group">
+      <div class="ios-row" onclick="toggleSettingsCard('danger')">
+        <div class="ios-row-icon" style="background:#EF4444"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></div>
+        <div class="ios-row-title" style="color:var(--red)">Danger Zone</div>
+        <svg class="ios-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="sec-body closed" id="setbody-danger">
         <div class="card-body-inner">
