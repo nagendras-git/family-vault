@@ -622,7 +622,7 @@ function renderSectionHTML(sec){
         ${persons.map(p=>`<button class="home-tab-btn${p===selected?' on':''}" onclick="event.stopPropagation();setSecPersonFilter('${sec.key}','${esc(p)}')">${esc(p)}</button>`).join('')}
       </div>${selSubtotal!=null?`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 12px">
         <span style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Total</span>
-        <span style="font-size:.86rem;font-weight:800;color:var(--blue)">${fmtFull(selSubtotal)}</span>
+        <span style="font-size:.86rem;font-weight:800;color:var(--text1)">${fmtFull(selSubtotal)}</span>
       </div>`:''}`;
       rows=map[selected].map(i=>renderItemRowHTML(sec,i)).join('');
     }else{
