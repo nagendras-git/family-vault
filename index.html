@@ -575,6 +575,7 @@ function renderSectionHTML(sec){
   const isOpen=secOpenState[sec.key]===true; // default closed
   let rows='';
   let personTabsHtml='';
+  let multiPerson=false;
 
   if(!items.length){
     rows=`<div class="empty-row">No ${sec.title.toLowerCase()} added yet</div>`;
@@ -587,6 +588,7 @@ function renderSectionHTML(sec){
       map[key].push(i);
     });
     if(persons.length>1){
+      multiPerson=true;
       const selected=secPersonFilter[sec.key]&&persons.includes(secPersonFilter[sec.key])?secPersonFilter[sec.key]:persons[0];
       secPersonFilter[sec.key]=selected;
       const selSubtotal=sec.sumField?map[selected].reduce((a,i)=>a+Number(i[sec.sumField]||0),0):null;
@@ -617,7 +619,7 @@ function renderSectionHTML(sec){
     </div>
   </div>
   <div class="sec-body ${isOpen?'':'closed'}" id="secbody-${sec.key}">
-    ${sec.sumField&&items.length?`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:8px">
+    ${sec.sumField&&items.length&&!multiPerson?`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:8px">
       <span style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Total</span>
       <span style="font-size:.86rem;font-weight:800;color:var(--blue)">${fmtFull(items.reduce((a,i)=>a+Number(i[sec.sumField]||0),0))}</span>
     </div>`:''}
