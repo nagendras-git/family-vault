@@ -191,6 +191,9 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 .chip.on{background:var(--text1);border-color:var(--text1);color:var(--bg);font-weight:700}
 .home-tab-btn{flex:1;border:none;background:transparent;color:var(--text3);font-family:inherit;font-size:.8rem;font-weight:700;padding:9px 0;border-radius:999px;cursor:pointer;transition:all 150ms}
 .home-tab-btn.on{background:var(--blue);color:#fff}
+.person-tabs .home-tab-btn.on{background:var(--surface3);color:var(--text1);box-shadow:inset 0 0 0 1.5px var(--border)}
+.person-tabs{border-radius:10px!important;border:none!important;background:var(--surface2)!important}
+.person-tabs .home-tab-btn{border-radius:6px!important}
 
 .toast{position:fixed;bottom:calc(var(--nav-h)+12px+var(--safe-b));left:50%;transform:translateX(-50%) translateY(6px);background:var(--surface);border:1px solid var(--border);color:var(--text1);padding:9px 20px;border-radius:99px;font-size:.86rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s var(--spring);white-space:nowrap;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -498,17 +501,18 @@ const SECTIONS=[
     rowValue:i=>i.target?L(i.target):''
   },
   {key:'accounts',title:'Bank Accounts',icon:'bank',singular:'Account',
-    groupByHeldBy:'heldBy',
+    groupByHeldBy:'heldBy',sumField:'balance',
     fields:[
       {id:'name',label:'Bank / Lender Name',type:'text',required:true,placeholder:'e.g. IDFC First Bank'},
       {id:'atype',label:'Type',type:'select',options:['Savings Account','Fixed Deposit','Recurring Deposit','Loan','Credit Card','Other']},
       {id:'heldBy',label:'Held By',type:'select',options:personOpts},
-      {id:'detail',label:'Balance / Outstanding / Purpose',type:'text',placeholder:'e.g. ₹8.2L balance, or ₹5L outstanding'},
+      {id:'balance',label:'Balance / Outstanding (₹)',type:'number',placeholder:'0'},
+      {id:'detail',label:'Purpose / Notes',type:'text',placeholder:'e.g. Emergency Fund, stitching business'},
       {id:'notes',label:'Notes',type:'textarea'}
     ],
     rowTitle:i=>i.name||'Untitled',
     rowSub:i=>[i.atype,i.heldBy,i.detail].filter(Boolean).join(' · '),
-    rowValue:i=>''
+    rowValue:i=>i.balance?fmtFull(i.balance):''
   },
   {key:'nominees',title:'Nominee Registry',icon:'users',singular:'Nominee Entry',
     fields:[
@@ -629,15 +633,14 @@ function renderSectionHTML(sec){
     });
     if(persons.length>1){
       multiPerson=true;
-      const options=['All',...persons];
-      const selected=secPersonFilter[sec.key]&&options.includes(secPersonFilter[sec.key])?secPersonFilter[sec.key]:'All';
+      const selected=secPersonFilter[sec.key]&&persons.includes(secPersonFilter[sec.key])?secPersonFilter[sec.key]:persons[0];
       secPersonFilter[sec.key]=selected;
-      const selItems=selected==='All'?items:map[selected];
+      const selItems=map[selected];
       const selSubtotal=sec.sumField?selItems.reduce((a,i)=>a+Number(i[sec.sumField]||0),0):null;
-      personTabsHtml=`<div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 14px 6px">Filter by Person</div><div class="chip-row" style="padding:2px 14px 6px" onclick="event.stopPropagation()">
-        ${options.map(p=>{
-          const count=p==='All'?items.length:map[p].length;
-          return `<button class="chip${p===selected?' on':''}" onclick="event.stopPropagation();setSecPersonFilter('${sec.key}','${esc(p)}')">${esc(p)} <span style="opacity:.65;font-weight:600">${count}</span></button>`;
+      personTabsHtml=`<div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 0 6px">Filter by Person</div><div class="home-tabs person-tabs" style="margin:0 0 10px" onclick="event.stopPropagation()">
+        ${persons.map(p=>{
+          const count=map[p].length;
+          return `<button class="home-tab-btn${p===selected?' on':''}" onclick="event.stopPropagation();setSecPersonFilter('${sec.key}','${esc(p)}')">${esc(p)} <span style="opacity:.65;font-weight:600">${count}</span></button>`;
         }).join('')}
       </div>${selSubtotal!=null?`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:8px">
         <span style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Total</span>
@@ -1249,8 +1252,8 @@ function loadSampleData(){
     );
 
     S.accounts.push(
-      {id:uid(),name:'IDFC First Bank',atype:'Savings Account',heldBy:'Nagendra',detail:'₹8.2L — Emergency Fund',notes:'12 months of expenses'},
-      {id:uid(),name:'HDFC Bank',atype:'Savings Account',heldBy:'Renuka',detail:'Primary account for stitching business',notes:''}
+      {id:uid(),name:'IDFC First Bank',atype:'Savings Account',heldBy:'Nagendra',balance:820000,detail:'Emergency Fund',notes:'12 months of expenses'},
+      {id:uid(),name:'HDFC Bank',atype:'Savings Account',heldBy:'Renuka',balance:150000,detail:'Primary account for stitching business',notes:''}
     );
 
     S.nominees.push(
