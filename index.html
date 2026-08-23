@@ -184,16 +184,15 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 .card-hdr .card-title{margin-bottom:0}
 .card-body-inner{padding:0 16px 16px}
 .home-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:4px;margin-bottom:14px}
-.chip-row{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+.chip-row{display:flex;gap:8px;padding:4px;margin-bottom:8px;background:var(--surface2);border:1px solid var(--border);border-radius:999px}
+.chip-col{flex:1;display:flex;justify-content:center;min-width:0}
 .chip-row::-webkit-scrollbar{display:none}
 .chip-row{scrollbar-width:none}
-.chip{flex-shrink:0;padding:9px 18px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;-webkit-appearance:none;font-family:'Inter',sans-serif;transition:all 150ms}
-.chip.on{background:var(--text1);border-color:var(--text1);color:var(--bg);font-weight:700}
+.chip{flex-shrink:0;padding:9px 18px;border-radius:999px;background:transparent;border:none;color:var(--text3);font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;-webkit-appearance:none;font-family:'Inter',sans-serif;transition:all 150ms}
+.chip.on{background:var(--border);color:var(--text1);font-weight:700;border-color:var(--border)}
 .home-tab-btn{flex:1;border:none;background:transparent;color:var(--text3);font-family:inherit;font-size:.8rem;font-weight:700;padding:9px 0;border-radius:999px;cursor:pointer;transition:all 150ms}
 .home-tab-btn.on{background:var(--blue);color:#fff}
 .person-tabs .home-tab-btn.on{background:var(--border);color:var(--text1)}
-.person-tabs{border-radius:10px!important;border:none!important;background:var(--surface2)!important}
-.person-tabs .home-tab-btn{border-radius:6px!important}
 
 .toast{position:fixed;bottom:calc(var(--nav-h)+12px+var(--safe-b));left:50%;transform:translateX(-50%) translateY(6px);background:var(--surface);border:1px solid var(--border);color:var(--text1);padding:9px 20px;border-radius:99px;font-size:.86rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s var(--spring);white-space:nowrap;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -637,7 +636,7 @@ function renderSectionHTML(sec){
       secPersonFilter[sec.key]=selected;
       const selItems=map[selected];
       const selSubtotal=sec.sumField?selItems.reduce((a,i)=>a+Number(i[sec.sumField]||0),0):null;
-      personTabsHtml=`<div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 0 6px">Filter by Person</div><div class="home-tabs person-tabs" style="margin:0 0 10px" onclick="event.stopPropagation()">
+      personTabsHtml=`<div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 0 6px">Filter by Person</div><div class="home-tabs person-tabs" onclick="event.stopPropagation()">
         ${persons.map(p=>{
           const count=map[p].length;
           return `<button class="home-tab-btn${p===selected?' on':''}" onclick="event.stopPropagation();setSecPersonFilter('${sec.key}','${esc(p)}')">${esc(p)} <span style="opacity:.65;font-weight:600">${count}</span></button>`;
