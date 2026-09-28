@@ -267,14 +267,14 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
         </div>
       </div>
 
-      <div class="ios-row" onclick="toggleSettingsCard('ef')">
+      <div class="ios-row" id="setrow-ef" onclick="toggleSettingsCard('ef')">
         <div class="ios-row-icon" style="background:#22C55E"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg></div>
         <div class="ios-row-title">Emergency Fund</div>
         <svg class="ios-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="sec-body closed" id="setbody-ef">
         <div class="card-body-inner">
-          <div class="card-sub">Total corpus set aside for emergencies (bank savings, liquid funds, etc). Shown on the Home screen alongside how many months of your Home Expenses it covers.</div>
+          <div class="card-sub">Total corpus set aside for emergencies (bank savings, liquid funds, etc). Shown on the Home screen alongside how many months of your Home Expenses it covers. Tip: you can also tag your existing assets in the Emergency Fund section on Home — this field then goes away.</div>
           <div class="fg" style="margin-bottom:0"><label class="fl">Current Amount (₹)</label><input class="fi" id="set-ef" type="number" inputmode="decimal" placeholder="0" oninput="saveEmergencyFund()"></div>
         </div>
       </div>
@@ -403,10 +403,27 @@ function load(){
   try{S=JSON.parse(localStorage.getItem(STORE_KEY))}catch(e){S=null}
   if(!S)S={};
   if(!S.profile)S.profile={p1:'Account Holder 1',p2:'Account Holder 2'};
-  ['investments','insurance','goals','accounts','nominees','documents','contacts','expenses'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
+  ['investments','efBuckets','monthlyInvest','insurance','goals','accounts','nominees','documents','contacts','expenses'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
+  if(migrateAccountsToAssets())save();
   if(S.emergencyFund==null)S.emergencyFund=0;
   if(S.hasSampleData==null)S.hasSampleData=false;
   if(!S.updatedAt)S.updatedAt=new Date().toISOString();
+}
+/* One-time move: Savings / FD / RD accounts become Assets. Loans & Cards stay in S.accounts. */
+function migrateAccountsToAssets(){
+  if(S.assetsMerged)return false;
+  const moveTypes=['Savings Account','Fixed Deposit','Recurring Deposit'];
+  const keep=[];
+  S.accounts.forEach(a=>{
+    if(moveTypes.includes(a.atype)){
+      S.investments.push({id:a.id||uid(),name:a.name||'Untitled',itype:a.atype,heldBy:a.heldBy||'',platform:'',
+        value:a.balance===''||a.balance==null?'':a.balance,nominee:'',
+        notes:[a.detail,a.notes].filter(Boolean).join(' — ')});
+    }else keep.push(a);
+  });
+  S.accounts=keep;
+  S.assetsMerged=true;
+  return true;
 }
 function save(){S.updatedAt=new Date().toISOString();try{localStorage.setItem(STORE_KEY,JSON.stringify(S));}catch(e){console.warn('FamilyVault: could not persist to storage',e);}}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
@@ -452,26 +469,84 @@ const ICONS={
   users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
   folder:'<path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>',
   phone:'<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>',
-  home:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'
+  home:'<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  lifebuoy:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'
 };
+function ordinal(n){n=Number(n);const v=n%100;const suf=(v>=11&&v<=13)?'th':(['th','st','nd','rd'][n%10]||'th');return n+suf}
 function personOpts(){return[S.profile.p1||'Account Holder 1',S.profile.p2||'Account Holder 2','Joint']}
 function personOptsBoth(){return[S.profile.p1||'Account Holder 1',S.profile.p2||'Account Holder 2','Both']}
 
+/* ===================== EMERGENCY FUND (tagged assets) ===================== */
+function assetById(id){return S.investments.find(x=>x.id===id)||null}
+function efCounted(b){
+  const a=assetById(b.assetId);if(!a)return 0;
+  const v=Number(a.value||0);
+  return(b.amount===''||b.amount==null)?v:Math.min(Number(b.amount)||0,v);
+}
+function efTotal(){
+  return S.efBuckets.length?S.efBuckets.reduce((a,b)=>a+efCounted(b),0):Number(S.emergencyFund||0);
+}
+function monthlyExpensesTotal(){return S.expenses.reduce((a,i)=>a+Number(i.amount||0),0)}
+function efMonthsText(total){
+  const exp=monthlyExpensesTotal();
+  return exp>0?((Math.round(total/exp*10)/10)+' months'):'Add Home Expenses';
+}
+function efSummaryBoxes(items){
+  const total=items.reduce((a,b)=>a+efCounted(b),0);
+  const box='display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:8px';
+  const lbl='font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em';
+  const val='font-size:.86rem;font-weight:800;color:var(--text1)';
+  return `<div style="${box}"><span style="${lbl}">Total</span><span style="${val}">${fmtFull(total)}</span></div>
+    <div style="${box}"><span style="${lbl}">Covers</span><span style="${val}">${efMonthsText(total)}</span></div>`;
+}
+
 const SECTIONS=[
-  {key:'investments',title:'Investments',icon:'invest',singular:'Investment',
+  {key:'investments',title:'Assets',icon:'invest',singular:'Asset',
     sumField:'value',groupByHeldBy:'heldBy',
     fields:[
       {id:'name',label:'Name',type:'text',required:true,placeholder:'e.g. Nifty 50 Index Fund'},
-      {id:'itype',label:'Type',type:'select',options:['Mutual Fund','ETF','Stocks','US Equity','Gold','EPF','PPF','NPS','Fixed Deposit','Real Estate','Other']},
+      {id:'itype',label:'Type',type:'select',options:['Mutual Fund','ETF','Stocks','US Equity','Gold','EPF','PPF','NPS','Savings Account','Fixed Deposit','Recurring Deposit','Real Estate','Other']},
       {id:'heldBy',label:'Held By',type:'select',options:personOpts},
-      {id:'platform',label:'Platform / Broker',type:'text',placeholder:'e.g. Zerodha, Coin'},
-      {id:'value',label:'Approx. Current Value (₹)',type:'number'},
+      {id:'platform',label:'Platform / Broker / Bank',type:'text',placeholder:'e.g. Zerodha, Coin, IDFC First Bank'},
+      {id:'value',label:'Current Value / Balance (₹)',type:'number'},
       {id:'nominee',label:'Nominee',type:'text',placeholder:'Who is the nominee for this?'},
       {id:'notes',label:'Notes',type:'textarea'}
     ],
     rowTitle:i=>i.name||'Untitled',
     rowSub:i=>[i.itype,i.heldBy].filter(Boolean).join(' · '),
     rowValue:i=>i.value?L(i.value):''
+  },
+  {key:'efBuckets',title:'Emergency Fund',icon:'lifebuoy',singular:'Bucket',
+    bodyExtra:efSummaryBoxes,
+    fields:[
+      {id:'assetId',label:'Asset',type:'assetPick',required:true},
+      {id:'amount',label:'Amount to count (₹) — leave empty to count the full value',type:'number'},
+      {id:'notes',label:'Notes',type:'textarea'}
+    ],
+    rowTitle:b=>{const a=assetById(b.assetId);return a?(a.name||'Untitled'):'Asset removed'},
+    rowSub:b=>{
+      const a=assetById(b.assetId);
+      if(!a)return 'Delete this bucket or pick another asset';
+      const v=Number(a.value||0),c=efCounted(b);
+      return [a.itype,a.heldBy,c<v?('Counting '+L(c)+' of '+L(v)):''].filter(Boolean).join(' · ');
+    },
+    rowValue:b=>assetById(b.assetId)?L(efCounted(b)):''
+  },
+  {key:'monthlyInvest',title:'Monthly SIPs',icon:'calendar',singular:'Monthly SIP',
+    sumField:'amount',sumSuffix:'/mo',groupByHeldBy:'heldBy',
+    fields:[
+      {id:'linkedId',label:'Pick from your Assets',type:'invPicker'},
+      {id:'name',label:'Name',type:'text',required:true,placeholder:'e.g. Nifty 50 Index Fund'},
+      {id:'amount',label:'Monthly Amount (₹)',type:'number',required:true},
+      {id:'mtype',label:'Type',type:'select',options:['SIP','PPF','RD','NPS','Gold','Other']},
+      {id:'heldBy',label:'Held By',type:'select',options:personOpts},
+      {id:'day',label:'Date of Month',type:'select',options:()=>Array.from({length:28},(_,n)=>String(n+1))},
+      {id:'notes',label:'Notes',type:'textarea'}
+    ],
+    rowTitle:i=>i.name||'Untitled',
+    rowSub:i=>[i.mtype,i.heldBy,i.day?('On the '+ordinal(i.day)):''].filter(Boolean).join(' · '),
+    rowValue:i=>i.amount?(L(Number(i.amount))+'/mo'):''
   },
   {key:'insurance',title:'Insurance',icon:'shield',singular:'Policy',
     fields:[
@@ -500,14 +575,14 @@ const SECTIONS=[
     rowSub:i=>{const t=Number(i.target||0),s=Number(i.saved||0);const p=t>0?Math.min(100,Math.round(s/t*100)):0;return t>0?(p+'% funded'):''},
     rowValue:i=>i.target?L(i.target):''
   },
-  {key:'accounts',title:'Bank Accounts',icon:'bank',singular:'Account',
+  {key:'accounts',title:'Liabilities',icon:'bank',singular:'Liability',
     groupByHeldBy:'heldBy',sumField:'balance',
     fields:[
-      {id:'name',label:'Bank / Lender Name',type:'text',required:true,placeholder:'e.g. IDFC First Bank'},
-      {id:'atype',label:'Type',type:'select',options:['Savings Account','Fixed Deposit','Recurring Deposit','Loan','Credit Card','Other']},
+      {id:'name',label:'Lender / Card Name',type:'text',required:true,placeholder:'e.g. HDFC Home Loan'},
+      {id:'atype',label:'Type',type:'select',options:['Loan','Credit Card','Other']},
       {id:'heldBy',label:'Held By',type:'select',options:personOpts},
-      {id:'balance',label:'Balance / Outstanding (₹)',type:'number',placeholder:'0'},
-      {id:'detail',label:'Purpose / Notes',type:'text',placeholder:'e.g. Emergency Fund, stitching business'},
+      {id:'balance',label:'Outstanding Amount (₹)',type:'number',placeholder:'0'},
+      {id:'detail',label:'Purpose / Notes',type:'text',placeholder:'e.g. Home loan, EMI on the 5th'},
       {id:'notes',label:'Notes',type:'textarea'}
     ],
     rowTitle:i=>i.name||'Untitled',
@@ -562,7 +637,7 @@ const SECTIONS=[
 const secOpenState={};
 let homeTab='finances';
 const HOME_TAB_GROUPS={
-  finances:['investments','insurance','goals','accounts','expenses'],
+  finances:['efBuckets','insurance','accounts','expenses','investments','monthlyInvest','goals'],
   records:['nominees','documents','contacts']
 };
 
@@ -571,7 +646,7 @@ function switchHomeTab(tab){
   document.getElementById('hometab-finances').classList.toggle('on',tab==='finances');
   document.getElementById('hometab-records').classList.toggle('on',tab==='records');
   const root=document.getElementById('sections-root');
-  root.innerHTML=SECTIONS.filter(sec=>HOME_TAB_GROUPS[homeTab].includes(sec.key)).map(sec=>renderSectionHTML(sec)).join('');
+  root.innerHTML=HOME_TAB_GROUPS[homeTab].map(k=>SECTIONS.find(sec=>sec.key===k)).filter(Boolean).map(sec=>renderSectionHTML(sec)).join('');
 }
 
 /* ===================== RENDER: HOME ===================== */
@@ -580,21 +655,24 @@ function renderAll(){
   document.getElementById('set-p1').value=S.profile.p1==='Account Holder 1'?'':(S.profile.p1||'');
   document.getElementById('set-p2').value=S.profile.p2==='Account Holder 2'?'':(S.profile.p2||'');
   document.getElementById('set-ef').value=S.emergencyFund>0?S.emergencyFund:'';
+  ['setrow-ef','setbody-ef'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=S.efBuckets.length?'none':''});
 
-  const totalInvest=S.investments.reduce((a,i)=>a+Number(i.value||0),0);
-  const netWorth=totalInvest+Number(S.emergencyFund||0);
+  const totalAssets=S.investments.reduce((a,i)=>a+Number(i.value||0),0);
+  const totalOwed=S.accounts.filter(i=>i.atype==='Loan'||i.atype==='Credit Card').reduce((a,i)=>a+Number(i.balance||0),0);
+  const netWorth=totalAssets-totalOwed; // emergency fund is already inside your savings assets
   const lifeCover=S.insurance.filter(i=>i.itype==='Term Life').reduce((a,i)=>a+Number(i.sumAssured||0),0);
   const healthCover=S.insurance.filter(i=>i.itype==='Health').reduce((a,i)=>a+Number(i.sumAssured||0),0);
   const monthlyExpenses=S.expenses.reduce((a,i)=>a+Number(i.amount||0),0);
-  const efMonths=monthlyExpenses>0?(S.emergencyFund/monthlyExpenses):0;
+  const efValue=efTotal();
+  const efMonths=monthlyExpenses>0?(efValue/monthlyExpenses):0;
   document.getElementById('sum-invest').textContent=L(netWorth);
   document.getElementById('sum-life').textContent=L(lifeCover);
   document.getElementById('sum-health').textContent=L(healthCover);
-  document.getElementById('sum-ef').textContent=L(S.emergencyFund);
+  document.getElementById('sum-ef').textContent=L(efValue);
   document.getElementById('sum-ef-months').textContent=monthlyExpenses>0?(Math.round(efMonths*10)/10)+' mo':'—';
 
   const root=document.getElementById('sections-root');
-  root.innerHTML=SECTIONS.filter(sec=>HOME_TAB_GROUPS[homeTab].includes(sec.key)).map(sec=>renderSectionHTML(sec)).join('');
+  root.innerHTML=HOME_TAB_GROUPS[homeTab].map(k=>SECTIONS.find(sec=>sec.key===k)).filter(Boolean).map(sec=>renderSectionHTML(sec)).join('');
 }
 
 function renderItemRowHTML(sec,i){
@@ -644,7 +722,7 @@ function renderSectionHTML(sec){
         }).join('')}
       </div>${selSubtotal!=null?`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:8px">
         <span style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Total</span>
-        <span style="font-size:.86rem;font-weight:800;color:var(--text1)">${fmtFull(selSubtotal)}</span>
+        <span style="font-size:.86rem;font-weight:800;color:var(--text1)">${fmtFull(selSubtotal)}${sec.sumSuffix||''}</span>
       </div>`:''}`;
       rows=selItems.map(i=>renderItemRowHTML(sec,i)).join('');
     }else{
@@ -669,8 +747,9 @@ function renderSectionHTML(sec){
   <div class="sec-body ${isOpen?'':'closed'}" id="secbody-${sec.key}">
     ${sec.sumField&&items.length&&!multiPerson?`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:8px">
       <span style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Total</span>
-      <span style="font-size:.86rem;font-weight:800;color:var(--text1)">${fmtFull(items.reduce((a,i)=>a+Number(i[sec.sumField]||0),0))}</span>
+      <span style="font-size:.86rem;font-weight:800;color:var(--text1)">${fmtFull(items.reduce((a,i)=>a+Number(i[sec.sumField]||0),0))}${sec.sumSuffix||''}</span>
     </div>`:''}
+    ${sec.bodyExtra&&items.length?sec.bodyExtra(items):''}
     ${personTabsHtml}
     <div class="row-list">${rows}</div>
     ${sec.key==='investments'?`<div class="add-row" style="margin-bottom:6px" onclick="event.stopPropagation();openImportInvestSheet()">
@@ -712,6 +791,24 @@ function openItemSheet(sectionKey,itemId){
           ${opts.map(o=>`<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`).join('')}
         </select></div>`;
     }
+    if(f.type==='assetPick'){
+      const usedByOthers=new Set(S.efBuckets.filter(b=>b.id!==itemId).map(b=>b.assetId));
+      const avail=S.investments.filter(a=>!usedByOthers.has(a.id));
+      const hint=!S.investments.length?'Add an asset first in the Assets section.':(!avail.length?'All your assets are already tagged here.':'');
+      return `<div class="fg"><label class="fl">${f.label}</label>
+        <select class="fi fi-sel" id="f-${f.id}">
+          <option value="">Select…</option>
+          ${avail.map(a=>`<option value="${esc(a.id)}" ${val===a.id?'selected':''}>${esc(a.name||'Untitled')}${a.heldBy?' ('+esc(a.heldBy)+')':''} — ${L(Number(a.value||0))}</option>`).join('')}
+        </select>${hint?`<div class="card-sub" style="margin-top:6px">${hint}</div>`:''}</div>`;
+    }
+    if(f.type==='invPicker'){
+      if(!S.investments.length)return `<input type="hidden" id="f-${f.id}" value="${esc(val)}">`;
+      return `<div class="fg"><label class="fl">${f.label}</label>
+        <select class="fi fi-sel" id="f-${f.id}" onchange="fillFromInvestment(this.value)">
+          <option value="">New / not in my list</option>
+          ${S.investments.map(inv=>`<option value="${esc(inv.id)}" ${val===inv.id?'selected':''}>${esc(inv.name||'Untitled')}${inv.heldBy?' ('+esc(inv.heldBy)+')':''}</option>`).join('')}
+        </select></div>`;
+    }
     if(f.type==='textarea'){
       return `<div class="fg"><label class="fl">${f.label}</label><textarea class="fi" id="f-${f.id}" placeholder="${esc(f.placeholder||'')}">${esc(val)}</textarea></div>`;
     }
@@ -737,6 +834,18 @@ function openItemSheet(sectionKey,itemId){
 
   document.getElementById('sheet-content').innerHTML=html;
   openSheetEl();
+}
+
+function fillFromInvestment(id){
+  const inv=S.investments.find(x=>x.id===id);
+  if(!inv)return; // "New / not in my list" — leave fields as they are
+  const set=(fid,v)=>{const el=document.getElementById('f-'+fid);if(el&&v!=null&&v!=='')el.value=v};
+  set('name',inv.name);
+  const t=inv.itype;
+  const m=(t==='PPF'||t==='NPS'||t==='Gold')?t:(t==='Recurring Deposit'?'RD':(['Mutual Fund','ETF','Stocks','US Equity'].includes(t)?'SIP':'Other'));
+  set('mtype',m);
+  const hb=document.getElementById('f-heldBy');
+  if(hb&&inv.heldBy&&[...hb.options].some(o=>o.value===inv.heldBy))hb.value=inv.heldBy;
 }
 
 function saveItem(sectionKey,itemId){
@@ -1215,7 +1324,8 @@ function importData(input){
       if(!parsed||typeof parsed!=='object')throw new Error('bad format');
       S=parsed;
       if(!S.profile)S.profile={p1:'Account Holder 1',p2:'Account Holder 2'};
-      ['investments','insurance','goals','accounts','nominees','documents','contacts'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
+      ['investments','efBuckets','monthlyInvest','insurance','goals','accounts','nominees','documents','contacts','expenses'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
+      migrateAccountsToAssets();
       save();renderAll();
       toast('Backup imported ✓');
     }catch(err){
@@ -1262,10 +1372,16 @@ function loadSampleData(){
       {id:uid(),name:'Home',target:5000000,saved:800000,notes:'Debt-free purchase, 5-year plan, in the city'}
     );
 
-    S.accounts.push(
-      {id:uid(),name:'IDFC First Bank',atype:'Savings Account',heldBy:'Nagendra',balance:820000,detail:'Emergency Fund',notes:'12 months of expenses'},
-      {id:uid(),name:'HDFC Bank',atype:'Savings Account',heldBy:'Renuka',balance:150000,detail:'Primary account for stitching business',notes:''}
+    S.investments.push(
+      {id:uid(),name:'IDFC First Bank Savings',itype:'Savings Account',heldBy:'Nagendra',platform:'IDFC First Bank',value:820000,nominee:'Renuka',notes:'Emergency Fund — 12 months of expenses'},
+      {id:uid(),name:'HDFC Bank Savings',itype:'Savings Account',heldBy:'Renuka',platform:'HDFC Bank',value:150000,nominee:'Nagendra',notes:'Primary account for stitching business'}
     );
+    S.accounts.push(
+      {id:uid(),name:'HDFC Credit Card',atype:'Credit Card',heldBy:'Nagendra',balance:18000,detail:'Monthly bills, paid in full each month',notes:''}
+    );
+    S.assetsMerged=true;
+    const idfcAsset=S.investments.find(i=>i.name==='IDFC First Bank Savings');
+    if(idfcAsset)S.efBuckets.push({id:uid(),assetId:idfcAsset.id,amount:'',notes:''});
 
     S.nominees.push(
       {id:uid(),asset:'Zerodha Demat & Coin',nomineeName:'Renuka',relation:'Spouse',contact:'',notes:''},
@@ -1283,6 +1399,13 @@ function loadSampleData(){
       {id:uid(),name:'Priya Sharma, CA',role:'Chartered Accountant',phone:'+91 91234 56789',notes:'Handles tax filing'}
     );
 
+    const invId=n=>{const x=S.investments.find(i=>i.name===n);return x?x.id:''};
+    S.monthlyInvest.push(
+      {id:uid(),linkedId:invId('ICICI Prudential Nifty 50 Index Fund'),name:'ICICI Prudential Nifty 50 Index Fund',amount:10000,mtype:'SIP',heldBy:'Nagendra',day:'5',notes:''},
+      {id:uid(),linkedId:invId('Motilal Oswal Nifty Midcap 150 Index Fund'),name:'Motilal Oswal Nifty Midcap 150 Index Fund',amount:8000,mtype:'SIP',heldBy:'Nagendra',day:'5',notes:''},
+      {id:uid(),linkedId:'',name:'PPF Contribution',amount:5000,mtype:'PPF',heldBy:'Renuka',day:'1',notes:''}
+    );
+
     S.expenses.push(
       {id:uid(),name:'Rent',amount:35000,notes:''},
       {id:uid(),name:'Groceries & Essentials',amount:15000,notes:''},
@@ -1294,7 +1417,7 @@ function loadSampleData(){
     S.hasSampleData=true;
 
     save();renderAll();
-    showAlert('Sample data has been added to your vault — investments, insurance, goals, accounts, and more. Explore the Home tab to see it.','Sample Data Loaded',{success:true});
+    showAlert('Sample data has been added to your vault — assets, insurance, goals, loans, and more. Explore the Home tab to see it.','Sample Data Loaded',{success:true});
   };
   if(S.hasSampleData){
     showAlert('Sample data is already loaded in your vault. Use Clear All Data in Settings first if you want to reload it.','Already Loaded');
@@ -1316,10 +1439,28 @@ function generateSummaryText(){
   lines.push('');
 
   if(S.investments.length){
-    lines.push('💰 INVESTMENTS');
+    lines.push('💰 ASSETS');
     S.investments.forEach((i,idx)=>{
       const parts=[i.itype,i.heldBy,i.platform].filter(Boolean).join(', ');
       lines.push((idx+1)+'. '+(i.name||'Untitled')+(parts?' ('+parts+')':'')+(i.value?' — '+fmtFull(i.value):'')+(i.nominee?' — Nominee: '+i.nominee:''));
+    });
+    lines.push('');
+  }
+  if(S.efBuckets.length){
+    const efT=efTotal();
+    lines.push('🛟 EMERGENCY FUND ('+fmtFull(efT)+(monthlyExpensesTotal()>0?' — '+efMonthsText(efT)+' covered':'')+')');
+    S.efBuckets.forEach((b,idx)=>{
+      const a=assetById(b.assetId);
+      lines.push((idx+1)+'. '+(a?(a.name||'Untitled'):'Asset removed')+(a?' — '+fmtFull(efCounted(b)):''));
+    });
+    lines.push('');
+  }
+  if(S.monthlyInvest.length){
+    const totalMI=S.monthlyInvest.reduce((a,i)=>a+Number(i.amount||0),0);
+    lines.push('📅 MONTHLY SIPs ('+fmtFull(totalMI)+'/month)');
+    S.monthlyInvest.forEach((i,idx)=>{
+      const parts=[i.mtype,i.heldBy,i.day?('on the '+ordinal(i.day)):''].filter(Boolean).join(', ');
+      lines.push((idx+1)+'. '+(i.name||'Untitled')+(parts?' ('+parts+')':'')+' — '+fmtFull(i.amount||0)+'/mo');
     });
     lines.push('');
   }
@@ -1340,7 +1481,7 @@ function generateSummaryText(){
     lines.push('');
   }
   if(S.accounts.length){
-    lines.push('🏦 BANK ACCOUNTS & LOANS');
+    lines.push('🏦 LIABILITIES');
     S.accounts.forEach((i,idx)=>{
       lines.push((idx+1)+'. '+(i.name||'Untitled')+(i.atype?' ('+i.atype+')':'')+(i.heldBy?' — '+i.heldBy:'')+(i.detail?' — '+i.detail:''));
     });
@@ -1362,12 +1503,12 @@ function generateSummaryText(){
   }
   if(S.expenses.length){
     const totalExp=S.expenses.reduce((a,i)=>a+Number(i.amount||0),0);
-    const efM=totalExp>0?Math.round((S.emergencyFund/totalExp)*10)/10:0;
+    const efM=totalExp>0?Math.round((efTotal()/totalExp)*10)/10:0;
     lines.push('🏠 HOME EXPENSES (₹'+totalExp.toLocaleString('en-IN')+'/month)');
     S.expenses.forEach((i,idx)=>{
       lines.push((idx+1)+'. '+(i.name||'Untitled')+' — '+fmtFull(i.amount||0)+'/mo');
     });
-    if(S.emergencyFund>0)lines.push('Emergency Fund: '+fmtFull(S.emergencyFund)+' ('+efM+' months covered)');
+    if(!S.efBuckets.length&&S.emergencyFund>0)lines.push('Emergency Fund: '+fmtFull(S.emergencyFund)+' ('+efM+' months covered)');
     lines.push('');
   }
   if(S.contacts.length){
