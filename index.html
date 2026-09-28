@@ -267,17 +267,6 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
         </div>
       </div>
 
-      <div class="ios-row" id="setrow-ef" onclick="toggleSettingsCard('ef')">
-        <div class="ios-row-icon" style="background:#22C55E"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg></div>
-        <div class="ios-row-title">Emergency Fund</div>
-        <svg class="ios-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-      <div class="sec-body closed" id="setbody-ef">
-        <div class="card-body-inner">
-          <div class="card-sub">Total corpus set aside for emergencies (bank savings, liquid funds, etc). Shown on the Home screen alongside how many months of your Home Expenses it covers. Tip: you can also tag your existing assets in the Emergency Fund section on Home — this field then goes away.</div>
-          <div class="fg" style="margin-bottom:0"><label class="fl">Current Amount (₹)</label><input class="fi" id="set-ef" type="number" inputmode="decimal" placeholder="0" oninput="saveEmergencyFund()"></div>
-        </div>
-      </div>
     </div>
 
     <div class="ios-group">
@@ -485,7 +474,7 @@ function efCounted(b){
   return(b.amount===''||b.amount==null)?v:Math.min(Number(b.amount)||0,v);
 }
 function efTotal(){
-  return S.efBuckets.length?S.efBuckets.reduce((a,b)=>a+efCounted(b),0):Number(S.emergencyFund||0);
+  return S.efBuckets.reduce((a,b)=>a+efCounted(b),0);
 }
 function monthlyExpensesTotal(){return S.expenses.reduce((a,i)=>a+Number(i.amount||0),0)}
 function efMonthsText(total){
@@ -654,8 +643,6 @@ function renderAll(){
   document.getElementById('hdr-people').textContent=(S.profile.p1||'Account Holder 1')+' & '+(S.profile.p2||'Account Holder 2');
   document.getElementById('set-p1').value=S.profile.p1==='Account Holder 1'?'':(S.profile.p1||'');
   document.getElementById('set-p2').value=S.profile.p2==='Account Holder 2'?'':(S.profile.p2||'');
-  document.getElementById('set-ef').value=S.emergencyFund>0?S.emergencyFund:'';
-  ['setrow-ef','setbody-ef'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=S.efBuckets.length?'none':''});
 
   const totalAssets=S.investments.reduce((a,i)=>a+Number(i.value||0),0);
   const totalOwed=S.accounts.filter(i=>i.atype==='Loan'||i.atype==='Credit Card').reduce((a,i)=>a+Number(i.balance||0),0);
@@ -668,8 +655,8 @@ function renderAll(){
   document.getElementById('sum-invest').textContent=L(netWorth);
   document.getElementById('sum-life').textContent=L(lifeCover);
   document.getElementById('sum-health').textContent=L(healthCover);
-  document.getElementById('sum-ef').textContent=L(efValue);
-  document.getElementById('sum-ef-months').textContent=monthlyExpenses>0?(Math.round(efMonths*10)/10)+' mo':'—';
+  document.getElementById('sum-ef').textContent=S.efBuckets.length?L(efValue):'—';
+  document.getElementById('sum-ef-months').textContent=(monthlyExpenses>0&&S.efBuckets.length)?(Math.round(efMonths*10)/10)+' mo':'—';
 
   const root=document.getElementById('sections-root');
   root.innerHTML=HOME_TAB_GROUPS[homeTab].map(k=>SECTIONS.find(sec=>sec.key===k)).filter(Boolean).map(sec=>renderSectionHTML(sec)).join('');
@@ -1257,12 +1244,6 @@ function saveProfile(){
   document.getElementById('hdr-people').textContent=S.profile.p1+' & '+S.profile.p2;
 }
 
-function saveEmergencyFund(){
-  S.emergencyFund=Number(document.getElementById('set-ef').value||0);
-  save();
-  renderAll();
-}
-
 function toggleTheme(){
   const isDark=!document.body.classList.contains('light-theme');
   applyTheme(isDark?'light':'dark');
@@ -1413,7 +1394,6 @@ function loadSampleData(){
       {id:uid(),name:'Utilities (Electricity, Water, Gas)',amount:4500,notes:''},
       {id:uid(),name:'Insurance Premiums',amount:3000,notes:'Averaged monthly'}
     );
-    S.emergencyFund=820000;
     S.hasSampleData=true;
 
     save();renderAll();
@@ -1503,12 +1483,10 @@ function generateSummaryText(){
   }
   if(S.expenses.length){
     const totalExp=S.expenses.reduce((a,i)=>a+Number(i.amount||0),0);
-    const efM=totalExp>0?Math.round((efTotal()/totalExp)*10)/10:0;
     lines.push('🏠 HOME EXPENSES (₹'+totalExp.toLocaleString('en-IN')+'/month)');
     S.expenses.forEach((i,idx)=>{
       lines.push((idx+1)+'. '+(i.name||'Untitled')+' — '+fmtFull(i.amount||0)+'/mo');
     });
-    if(!S.efBuckets.length&&S.emergencyFund>0)lines.push('Emergency Fund: '+fmtFull(S.emergencyFund)+' ('+efM+' months covered)');
     lines.push('');
   }
   if(S.contacts.length){
