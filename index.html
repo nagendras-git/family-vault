@@ -58,7 +58,7 @@ html{height:100%;overflow-x:hidden;font-size:var(--base);background:var(--bg)}
 body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text1);min-height:100vh;max-width:100vw;padding-bottom:calc(var(--nav-h) + var(--safe-b) + 4px);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 ::-webkit-scrollbar{width:0;height:0}
 
-.top-header{position:sticky;top:0;z-index:80;background:var(--bg);border-bottom:1px solid var(--border2);padding:calc(env(safe-area-inset-top,12px) + 8px) 16px 10px}
+.top-header{position:sticky;top:0;z-index:80;background:var(--bg);border-bottom:1px solid var(--border2);padding:calc(env(safe-area-inset-top,12px) + 30px) 16px 10px}
 .hdr-inner{width:100%;max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
 .hdr-avatar{width:38px;height:38px;border-radius:50%;background:#6d28d9;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0}
 .hdr-avatar svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round}
@@ -239,6 +239,7 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 
     <div class="home-tabs" id="home-tabs">
       <button class="home-tab-btn on" id="hometab-finances" onclick="switchHomeTab('finances')">Finances</button>
+      <button class="home-tab-btn" id="hometab-longterm" onclick="switchHomeTab('longterm')">Commitments</button>
       <button class="home-tab-btn" id="hometab-records" onclick="switchHomeTab('records')">Records</button>
     </div>
 
@@ -626,14 +627,14 @@ const SECTIONS=[
 const secOpenState={};
 let homeTab='finances';
 const HOME_TAB_GROUPS={
-  finances:['efBuckets','insurance','accounts','expenses','investments','monthlyInvest','goals'],
+  finances:['efBuckets','expenses','investments','monthlyInvest'],
+  longterm:['insurance','accounts','goals'],
   records:['nominees','documents','contacts']
 };
 
 function switchHomeTab(tab){
   homeTab=tab;
-  document.getElementById('hometab-finances').classList.toggle('on',tab==='finances');
-  document.getElementById('hometab-records').classList.toggle('on',tab==='records');
+  Object.keys(HOME_TAB_GROUPS).forEach(k=>{const b=document.getElementById('hometab-'+k);if(b)b.classList.toggle('on',tab===k)});
   const root=document.getElementById('sections-root');
   root.innerHTML=HOME_TAB_GROUPS[homeTab].map(k=>SECTIONS.find(sec=>sec.key===k)).filter(Boolean).map(sec=>renderSectionHTML(sec)).join('');
 }
