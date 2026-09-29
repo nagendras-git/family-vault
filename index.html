@@ -84,7 +84,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .sec-hdr-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
 .sec-hdr-icon{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.18);color:var(--blue)}
 .sec-hdr-icon svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.sec-hdr-title{font-size:.9rem;font-weight:700;color:var(--text1);letter-spacing:-.01em}
+.sec-hdr-title{font-size:.9rem;font-weight:700;color:var(--text1);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sec-badge{font-size:.7rem;font-weight:700;color:var(--blue);background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);padding:3px 9px;border-radius:99px;white-space:nowrap;flex-shrink:0}
 .sec-hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .sec-caret{color:var(--text3);transition:transform .25s var(--ease);display:flex;align-items:center;flex-shrink:0}
@@ -1576,7 +1576,7 @@ function renderStats(){
   root.innerHTML=`
     <div class="sec-hdr" onclick="toggleStatsCard('sipTable')">
       <div class="sec-hdr-left">
-        <div class="sec-hdr-title">📊 Total Monthly Investments</div>
+        <div class="sec-hdr-title">📊 Monthly Investments</div>
       </div>
       <div class="sec-hdr-right">
         <span class="sec-badge">${fmtFull(sipTotal)}/mo</span>
@@ -1589,7 +1589,7 @@ function renderStats(){
 
     <div class="sec-hdr" onclick="toggleStatsCard('expTable')">
       <div class="sec-hdr-left">
-        <div class="sec-hdr-title">🧾 Total Monthly Expenses</div>
+        <div class="sec-hdr-title">🧾 Monthly Expenses</div>
       </div>
       <div class="sec-hdr-right">
         <span class="sec-badge">${fmtFull(expTotal)}/mo</span>
