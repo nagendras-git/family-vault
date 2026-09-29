@@ -1576,8 +1576,7 @@ function renderStats(){
   root.innerHTML=`
     <div class="sec-hdr" onclick="toggleStatsCard('sipTable')">
       <div class="sec-hdr-left">
-        <div class="sec-hdr-icon"><svg viewBox="0 0 24 24">${ICONS.calendar}</svg></div>
-        <div><div class="sec-hdr-title">📊 Total Monthly Investments</div></div>
+        <div class="sec-hdr-title">📊 Total Monthly Investments</div>
       </div>
       <div class="sec-hdr-right">
         <span class="sec-badge">${fmtFull(sipTotal)}/mo</span>
@@ -1590,8 +1589,7 @@ function renderStats(){
 
     <div class="sec-hdr" onclick="toggleStatsCard('expTable')">
       <div class="sec-hdr-left">
-        <div class="sec-hdr-icon"><svg viewBox="0 0 24 24">${ICONS.home}</svg></div>
-        <div><div class="sec-hdr-title">🧾 Total Monthly Expenses</div></div>
+        <div class="sec-hdr-title">🧾 Total Monthly Expenses</div>
       </div>
       <div class="sec-hdr-right">
         <span class="sec-badge">${fmtFull(expTotal)}/mo</span>
