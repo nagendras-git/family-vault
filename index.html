@@ -1698,21 +1698,6 @@ function renderCommitTop(){
       </div>`).join('')
     : '<div class="ct-empty">No renewals set yet</div>';
   root.innerHTML=`
-    <div class="ct-tiles">
-      <div class="ct-tile">
-        <div class="ct-lbl">Life Cover</div>
-        <div class="ct-val">${L(lifeCover)}</div>
-      </div>
-      <div class="ct-tile">
-        <div class="ct-lbl">Loans Left</div>
-        <div class="ct-val neutral">${owed>0?L(owed):'₹0'}</div>
-      </div>
-      <div class="ct-tile">
-        <div class="ct-lbl">Goals</div>
-        <div class="ct-val neutral">${withTarget.length?funded+' of '+withTarget.length:'—'}</div>
-        <div class="ct-sub">${withTarget.length?'funded':'none set'}</div>
-      </div>
-    </div>
     <div class="ct-card">
       <div class="ct-head">Coming up</div>
       ${upHtml}
