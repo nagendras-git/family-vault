@@ -184,6 +184,32 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 
 .toast{position:fixed;bottom:calc(var(--nav-h)+12px+var(--safe-b));left:50%;transform:translateX(-50%) translateY(6px);background:var(--surface);border:1px solid var(--border);color:var(--text1);padding:9px 20px;border-radius:99px;font-size:.86rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s var(--spring);white-space:nowrap;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Plans header */
+.ct-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ct-tile{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 10px;min-width:0}
+.ct-lbl{font-size:.56rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-val{font-size:1.02rem;font-weight:800;letter-spacing:-.02em;color:var(--green)}
+.ct-val.neutral{color:var(--text1)}
+.ct-sub{font-size:.6rem;color:var(--text3);margin-top:3px}
+.ct-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;margin-bottom:14px}
+.ct-head{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:12px 14px 4px}
+.ct-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-top:1px solid var(--border2);cursor:pointer}
+.ct-month{min-width:48px;text-align:center;font-size:.66rem;font-weight:800;color:var(--blue);background:rgba(59,130,246,.12);border-radius:8px;padding:6px 0}
+.ct-body{flex:1;min-width:0}
+.ct-name{font-size:.86rem;font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-meta{font-size:.68rem;color:var(--text3);margin-top:2px}
+.ct-amt{font-size:.8rem;font-weight:700;color:var(--text1);white-space:nowrap}
+.ct-empty{padding:14px;font-size:.75rem;color:var(--text3);text-align:center}
+
+/* Tab dropdown */
+.home-select-wrap{position:relative;margin-bottom:14px}
+.home-select{width:100%;appearance:none;-webkit-appearance:none;background:var(--surface);border:1px solid var(--border);border-radius:14px;color:var(--text1);font-family:inherit;font-size:.92rem;font-weight:700;padding:12px 44px 12px 16px;cursor:pointer}
+.home-select:focus{outline:none}
+.home-select:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.home-select option{background:var(--surface);color:var(--text1)}
+.home-select-caret{position:absolute;right:16px;top:50%;width:18px;height:18px;transform:translateY(-50%);fill:none;stroke:var(--text3);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.group-head{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:6px 2px 8px}
 </style>
 </head>
 <body>
@@ -212,7 +238,7 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
 <div class="page active" id="page-home">
   <div class="container">
 
-    <div class="summary-card">
+    <div class="summary-card" id="home-summary">
       <div class="summary-top">
         <div class="summary-eyebrow">Total Net Worth</div>
         <div class="summary-big" style="color:var(--green)" id="sum-invest">₹0</div>
@@ -238,8 +264,8 @@ textarea.fi{resize:vertical;min-height:64px;font-family:'Inter',sans-serif}
     </div>
 
     <div class="home-tabs" id="home-tabs">
-      <button class="home-tab-btn on" id="hometab-finances" onclick="switchHomeTab('finances')">Finances</button>
-      <button class="home-tab-btn" id="hometab-longterm" onclick="switchHomeTab('longterm')">Commitments</button>
+      <button class="home-tab-btn on" id="hometab-money" onclick="switchHomeTab('money')">Money</button>
+      <button class="home-tab-btn" id="hometab-plans" onclick="switchHomeTab('plans')">Plans</button>
       <button class="home-tab-btn" id="hometab-records" onclick="switchHomeTab('records')">Records</button>
     </div>
 
@@ -419,7 +445,7 @@ function migrateAccountsToAssets(){
     if(moveTypes.includes(a.atype)){
       S.investments.push({id:a.id||uid(),name:a.name||'Untitled',itype:a.atype,heldBy:a.heldBy||'',platform:'',
         value:a.balance===''||a.balance==null?'':a.balance,nominee:'',
-        notes:[a.detail,a.notes].filter(Boolean).join(' — ')});
+        notes:[a.detail,a.notes].filter(Boolean).join(': ')});
     }else keep.push(a);
   });
   S.accounts=keep;
@@ -563,7 +589,7 @@ const SECTIONS=[
       {id:'nominee',label:'Nominee',type:'text'},
       {id:'notes',label:'Notes',type:'textarea'}
     ],
-    rowTitle:i=>[i.itype,i.provider].filter(Boolean).join(' — ')||'Untitled',
+    rowTitle:i=>[i.itype,i.provider].filter(Boolean).join(': ')||'Untitled',
     rowSub:i=>[i.holder,i.dueMonth?('Renews '+i.dueMonth):''].filter(Boolean).join(' · '),
     rowValue:i=>i.sumAssured?L(i.sumAssured):''
   },
@@ -641,18 +667,31 @@ const SECTIONS=[
 const secOpenState={};
 const statsOpenState={sipTable:true,expTable:true};
 function toggleStatsCard(key){statsOpenState[key]=!statsOpenState[key];renderStats();}
-let homeTab='finances';
+let homeTab='money';
 const HOME_TAB_GROUPS={
-  finances:['efBuckets','expenses','investments','monthlyInvest'],
-  longterm:['insurance','accounts','goals'],
+  money:['efBuckets','expenses','investments','monthlyInvest'],
+  plans:['TILES','insurance','accounts','goals'],
   records:['nominees','documents','contacts']
 };
+/* Builds the list for a tab. "HEAD:" entries are small headings. */
+function renderGroupHTML(tab){
+  let out='';
+  HOME_TAB_GROUPS[tab].forEach(k=>{
+    if(k==='TILES'){
+      out+=`<div id="commit-root"></div>`;
+      return;
+    }
+    const sec=SECTIONS.find(x=>x.key===k);
+    if(sec)out+=renderSectionHTML(sec);
+  });
+  return out;
+}
 
 function switchHomeTab(tab){
   homeTab=tab;
   Object.keys(HOME_TAB_GROUPS).forEach(k=>{const b=document.getElementById('hometab-'+k);if(b)b.classList.toggle('on',tab===k)});
   const root=document.getElementById('sections-root');
-  root.innerHTML=HOME_TAB_GROUPS[homeTab].map(k=>SECTIONS.find(sec=>sec.key===k)).filter(Boolean).map(sec=>renderSectionHTML(sec)).join('');
+  root.innerHTML=renderGroupHTML(homeTab);
 }
 
 /* ===================== RENDER: HOME ===================== */
@@ -677,7 +716,7 @@ function renderAll(){
   document.getElementById('sum-ef-months').textContent=(monthlyExpenses>0&&S.efBuckets.length)?(Math.round(efMonths*10)/10)+' mo':'—';
 
   const root=document.getElementById('sections-root');
-  root.innerHTML=HOME_TAB_GROUPS[homeTab].map(k=>SECTIONS.find(sec=>sec.key===k)).filter(Boolean).map(sec=>renderSectionHTML(sec)).join('');
+  root.innerHTML=renderGroupHTML(homeTab);
 }
 
 function renderItemRowHTML(sec,i){
@@ -1465,7 +1504,7 @@ function generateSummaryText(){
   if(S.insurance.length){
     lines.push('🛡 INSURANCE');
     S.insurance.forEach((i,idx)=>{
-      lines.push((idx+1)+'. '+[i.itype,i.provider].filter(Boolean).join(' — ')+(i.policyNo?' (Policy# '+i.policyNo+')':'')+(i.sumAssured?' — Cover '+fmtFull(i.sumAssured):'')+(i.premium?' — Premium '+fmtFull(i.premium)+'/yr':'')+(i.dueMonth?' — Renews '+i.dueMonth:'')+(i.holder?' — Holder: '+i.holder:'')+(i.nominee?' — Nominee: '+i.nominee:''));
+      lines.push((idx+1)+'. '+[i.itype,i.provider].filter(Boolean).join(': ')+(i.policyNo?' (Policy# '+i.policyNo+')':'')+(i.sumAssured?', Cover '+fmtFull(i.sumAssured):'')+(i.premium?' — Premium '+fmtFull(i.premium)+'/yr':'')+(i.dueMonth?' — Renews '+i.dueMonth:'')+(i.holder?' — Holder: '+i.holder:'')+(i.nominee?' — Nominee: '+i.nominee:''));
     });
     lines.push('');
   }
@@ -1601,7 +1640,7 @@ function renderStats(){
     </div>
 
     ${combined>0?`<div style="padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);font-size:.82rem;color:var(--text2);line-height:1.5">
-      You invest <b style="color:var(--text1)">${fmtFull(sipTotal)}/mo</b> and spend <b style="color:var(--text1)">${fmtFull(expTotal)}/mo</b> — that's <b style="color:var(--text1)">${invPct}% investing</b> and <b style="color:var(--text1)">${expPct}% spending</b> of the two combined.
+      You invest <b style="color:var(--text1)">${fmtFull(sipTotal)}/mo</b> and spend <b style="color:var(--text1)">${fmtFull(expTotal)}/mo</b>. That's <b style="color:var(--text1)">${invPct}% investing</b> and <b style="color:var(--text1)">${expPct}% spending</b> of the two combined.
     </div>`:''}
   `;
 }
@@ -1631,6 +1670,61 @@ function _updateTopbarH(){
   const el=document.querySelector('.top-header');
   if(el) document.documentElement.style.setProperty('--topbar-h',el.offsetHeight+'px');
 }
+/* ===================== COMMITMENTS HEADER ===================== */
+const MONTH_LIST=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function renderCommitTop(){
+  const root=document.getElementById('commit-root');
+  if(!root)return;
+  const ins=S.insurance||[], accs=S.accounts||[], goals=S.goals||[];
+  const lifeCover=ins.filter(i=>i.itype==='Term Life').reduce((a,i)=>a+Number(i.sumAssured||0),0);
+  const owed=accs.filter(i=>i.atype==='Loan'||i.atype==='Credit Card').reduce((a,i)=>a+Number(i.balance||0),0);
+  const withTarget=goals.filter(g=>Number(g.target||0)>0);
+  const funded=withTarget.filter(g=>Number(g.saved||0)>=Number(g.target)).length;
+  const curIdx=new Date().getMonth();
+  const upcoming=ins
+    .filter(i=>MONTH_LIST.indexOf(i.dueMonth)>-1)
+    .map(i=>({i,gap:(MONTH_LIST.indexOf(i.dueMonth)-curIdx+12)%12}))
+    .sort((a,b)=>a.gap-b.gap)
+    .slice(0,3);
+  const upHtml=upcoming.length
+    ? upcoming.map(({i})=>`
+      <div class="ct-item" onclick="openItemSheet('insurance','${i.id}')">
+        <div class="ct-month">${esc(i.dueMonth.slice(0,3).toUpperCase())}</div>
+        <div class="ct-body">
+          <div class="ct-name">${esc([i.itype,i.provider].filter(Boolean).join(': ')||'Untitled')}</div>
+          <div class="ct-meta">${esc([i.holder,'Renews '+i.dueMonth].filter(Boolean).join(' · '))}</div>
+        </div>
+        <div class="ct-amt">${i.premium?fmtFull(i.premium)+'/yr':''}</div>
+      </div>`).join('')
+    : '<div class="ct-empty">No renewals set yet</div>';
+  root.innerHTML=`
+    <div class="ct-tiles">
+      <div class="ct-tile">
+        <div class="ct-lbl">Life Cover</div>
+        <div class="ct-val">${L(lifeCover)}</div>
+      </div>
+      <div class="ct-tile">
+        <div class="ct-lbl">Loans Left</div>
+        <div class="ct-val neutral">${owed>0?L(owed):'₹0'}</div>
+      </div>
+      <div class="ct-tile">
+        <div class="ct-lbl">Goals</div>
+        <div class="ct-val neutral">${withTarget.length?funded+' of '+withTarget.length:'—'}</div>
+        <div class="ct-sub">${withTarget.length?'funded':'none set'}</div>
+      </div>
+    </div>
+    <div class="ct-card">
+      <div class="ct-head">Coming up</div>
+      ${upHtml}
+    </div>`;
+}
+/* Refresh the header whenever the tab changes or the page re-renders */
+(function(){
+  const _sw=switchHomeTab, _ra=renderAll;
+  switchHomeTab=function(t){_sw(t);renderCommitTop();};
+  renderAll=function(){_ra();renderCommitTop();};
+})();
+
 _updateTopbarH();
 window.addEventListener('resize',_updateTopbarH);
 window.addEventListener('orientationchange',_updateTopbarH);
